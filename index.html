@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Rolls de producción</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
 /* Layout: barra de pestañas fija arriba. Plan = buscador a la izquierda y filas de producción a la derecha.
    Compras = grupos con casillas. Recetas = fichas de cocina. Todo en una sola columna en el celular. */
@@ -497,6 +497,194 @@ main{padding-block:18px 96px}
 
 .mfb.clr{--c:var(--muted); background:var(--surface); border-style:dashed; margin-left:4px}
 .mfb.clr[disabled]{opacity:.45; cursor:default}
+
+/* ======== TEMA GRAFITO (minimalista oscuro) ======== */
+:root,:root[data-theme="light"],:root[data-theme="dark"]{
+  --bg:#171614; --surface:#211f1c; --raise:#2a2825; --ink:#eae6dd; --muted:#a09b90; --line:#2e2c28; --line-strong:#3d3a35;
+  --accent:#f0b44c; --accent-ink:#1a1305; --accent-soft:#2c2616;
+  --warn:#f0b44c; --warn-soft:#2c2616; --danger:#ff8f7a; --ok:#8fd19e;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --r:10px; --cl:.8; color-scheme:dark;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#171614; --surface:#211f1c; --raise:#2a2825; --ink:#eae6dd; --muted:#a09b90; --line:#2e2c28; --line-strong:#3d3a35;
+  --accent:#f0b44c; --accent-ink:#1a1305; --accent-soft:#2c2616; --warn:#f0b44c; --warn-soft:#2c2616; --danger:#ff8f7a; --cl:.8} }
+html{background:var(--bg)}
+body{letter-spacing:0}
+
+/* cabecera */
+.top{border-bottom:0}
+.brand h1{font:500 .8125rem var(--sans); color:var(--muted); letter-spacing:.02em}
+.btn.ic{color:var(--ink)}
+.tab{border-bottom:2px solid transparent; font-weight:500}
+.tab[aria-selected="true"]{color:var(--accent); border-bottom-color:var(--accent); font-weight:600}
+.tab .ti{display:none}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]:hover{color:var(--accent)}
+
+/* títulos de sección */
+.bar h2{font:500 2rem/1.05 var(--sans); letter-spacing:-.02em}
+.bar .sum{font:400 .75rem var(--mono); color:var(--muted)}
+
+/* botones */
+.btn{border:0; background:var(--raise); border-radius:12px; font-weight:500}
+.btn:hover{border-color:transparent; filter:brightness(1.12)}
+.btn.primary{background:var(--accent); color:var(--accent-ink); font-weight:600}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{background:none; color:var(--ink)}
+.btn.ghost:hover{background:var(--raise)}
+.btn.mini{border-radius:10px}
+.link{color:var(--accent)}
+.sw input,.lab input,.ostep .otime input{accent-color:var(--accent)}
+
+/* tarjetas */
+.rows{background:none; border:0}
+#planRows{display:grid; gap:10px}
+.row{background:var(--surface); border:0; border-radius:16px; padding:16px}
+.row:first-child{border-top:0}
+.rx{border-top:0; padding-top:2px}
+.group,.rcard,.path,.pcard{background:var(--surface); border:0; border-radius:16px}
+.rcard.fin{border:0}
+.group h3{border-bottom:1px solid var(--line)}
+.picker{background:var(--surface)}
+.empty{border:1px dashed var(--line-strong); border-radius:16px}
+.qty{border:0; background:var(--bg); border-radius:12px}
+.qty .step{background:transparent; color:var(--ink)}
+.qty .step:hover{background:var(--raise)}
+.qty input{background:transparent; border-inline:0; color:var(--ink)}
+.qty .unit{background:transparent; border-right:0}
+.seg{border:0; background:var(--bg); border-radius:12px; padding:3px; gap:3px}
+.segb{background:transparent; border-radius:9px}
+.segb + .segb{border-left:0}
+.segb[aria-pressed="true"]{background:var(--accent); color:var(--accent-ink)}
+.picker-head input,.sin,.startl input,.stp .step{background:var(--bg); border:1px solid var(--line); border-radius:12px}
+.pick-grp{background:var(--bg)}
+.menu-pop{background:var(--raise); border:0; border-radius:14px; box-shadow:0 12px 32px rgba(0,0,0,.55)}
+.menu-item:hover{background:rgba(255,255,255,.06)}
+.picker{border-radius:20px}
+.stock,.icard[open] > summary{background:var(--bg)}
+.stock{border:0; border-radius:12px}
+.owait{border-radius:10px}
+.count{background:var(--raise); color:var(--accent)}
+.badge,.kind.km,.kind.kx{border-radius:8px}
+
+/* salsa: chip ámbar discreto */
+.sauce{background:var(--accent-soft); color:var(--accent); border-radius:10px}
+
+/* menú */
+.mfilter{border-bottom:0; padding:8px 16px 8px}
+.mf-t{font:500 .75rem var(--sans); letter-spacing:0; text-transform:none; color:var(--muted)}
+.mfb{border-radius:12px; font-size:.875rem}
+.mfb.diet{--c:oklch(var(--cl) .14 150)}
+.mverdict{background:none!important; padding:6px 2px 0; font:400 .75rem var(--mono); color:var(--muted)}
+.mverdict.ok,.mverdict.no{color:var(--muted)}
+.msh{font:600 .75rem var(--sans); letter-spacing:.08em; padding:4px 4px 10px; align-items:center}
+.msh::before{content:''; width:8px; height:8px; border-radius:50%; background:var(--muted); flex:none}
+.msh.ok{color:var(--ok)} .msh.ok::before{background:var(--ok)}
+.msh.no{color:var(--danger)} .msh.no::before{background:var(--danger)}
+.msh span{color:var(--muted)}
+.mc,.mc.t-raw,.mc.t-cook{background:var(--surface); border:0; border-radius:16px; padding:16px}
+.mc,.mc.t-raw,.mc.t-cook,.mc.ok,.mc.no{border-left:0}
+.mc::before{content:''; position:absolute; left:0; top:14px; bottom:14px; width:4px; border-radius:0 4px 4px 0; background:var(--tc)}
+.mc.ok::before{background:var(--ok)}
+.mc.no::before{background:var(--danger)}
+.mc.no{background:#1d1b19; opacity:.85}
+.mc .mv.ok{display:none}
+.mh h3{font:600 1.0625rem/1.25 var(--sans); letter-spacing:0}
+.mpz{font:400 .75rem var(--mono)}
+.tg2{border-radius:8px}
+.al{border-radius:8px}
+.mal-l{color:var(--muted)}
+.mv{border-radius:10px}
+.mv.ok{color:var(--ok); background:rgba(143,209,158,.12)}
+.mv.no{color:var(--danger); background:rgba(255,143,122,.12)}
+.mdet{border-top:1px solid var(--line)}
+.mrole .how{border-radius:8px}
+.mnote{font-size:.75rem}
+
+/* celular: pestañas abajo */
+@media (max-width:759px){
+  .tabs{position:fixed; left:0; right:0; bottom:0; z-index:20; width:auto; max-width:none; overflow:visible; justify-content:space-around; gap:0;
+    background:var(--bg); border-top:1px solid var(--line); padding:6px 6px calc(10px + env(safe-area-inset-bottom, 0px))}
+  .tab{flex:1 1 0; min-width:0; flex-direction:column; justify-content:center; gap:4px; min-height:52px; padding:0 2px; font-size:.75rem; border-bottom:0}
+  .tab .ti{display:block}
+  .tab .count{display:none}
+  .tab[aria-selected="true"]{border-bottom:0}
+  .top{padding-top:4px}
+  main{padding-block:10px 150px}
+  .plan-foot{bottom:calc(68px + env(safe-area-inset-bottom, 0px)); border-top:0; background:linear-gradient(to top, var(--bg) 78%, transparent); padding:14px 16px 8px; margin:12px -16px 0}
+  .toast{bottom:calc(84px + env(safe-area-inset-bottom, 0px))}
+}
+@media (min-width:760px){
+  .top{border-bottom:1px solid var(--line)}
+}
+
+/* ======== DISEÑO 1: plan compacto, chip y hoja ======== */
+.top{grid-template-columns:minmax(0,1fr) auto auto}
+.hm{grid-column:3}
+.pchip{grid-column:2; grid-row:1; justify-self:end; display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 12px; margin-right:4px; border:0; border-radius:12px; background:var(--raise); color:var(--ink); font:500 .75rem var(--sans); cursor:pointer; white-space:nowrap}
+.pchip svg{color:var(--accent); flex:none}
+.pchip[hidden]{display:none}
+.pchip:hover{background:var(--line-strong)}
+@media (min-width:760px){ .pchip{align-self:center; margin-bottom:4px} }
+
+#planRows{gap:8px}
+#planRows .row{--tc:#7fdc9f; position:relative; overflow:hidden; display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"main qty" "rx rx"; gap:0 4px; align-items:center; padding:6px 6px 6px 16px; border-radius:16px}
+#planRows .row.t-raw{--tc:#8fc4ff}
+#planRows .row.t-cook{--tc:#ffb36b}
+#planRows .row.t-int{--tc:#a09b90}
+#planRows .row::before{content:''; position:absolute; left:0; top:12px; bottom:12px; width:4px; border-radius:0 4px 4px 0; background:var(--tc)}
+#planRows .row .rmain{grid-area:main; min-width:0; min-height:56px; display:flex; flex-direction:column; justify-content:center; gap:4px; text-align:left; padding:6px 0; border:0; background:transparent; color:var(--ink); font:inherit; cursor:pointer}
+#planRows .row .rn{font-size:.9375rem; font-weight:600; line-height:1.2; overflow-wrap:anywhere}
+#planRows .row .meta{margin:0; display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; font-size:.75rem; color:var(--muted)}
+#planRows .row .sauce.mini{padding:2px 8px; gap:4px; font-size:.6875rem; border-radius:8px; max-width:100%}
+#planRows .row .sauce.mini b{font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:11ch}
+#planRows .row .sauce.mini svg{width:11px; height:11px}
+#planRows .row .sauce.mini .sq{font:600 .6875rem var(--mono)}
+#planRows .row > .qty{grid-area:qty; background:transparent; display:flex; align-items:center}
+#planRows .row .qty .step{width:36px; height:44px; font-size:1.25rem}
+#planRows .row .qty input{width:44px; height:44px; padding:0; text-align:center; font:500 1rem var(--mono)}
+#planRows .row .qty .unit{min-width:0; padding:0 2px 0 0; font-size:.6875rem; color:var(--muted); width:3.2em; text-align:left}
+#planRows .row > .rx{grid-area:rx}
+#planRows .row > .rx:empty{display:none}
+#planRows .row > .rx{padding:10px 10px 6px 0; display:flex; flex-direction:column; gap:10px; border-top:1px solid var(--line); margin-top:2px}
+#planRows .row > .rx:empty{display:none}
+.rbase{margin:0; font-size:.8125rem; color:var(--muted)}
+.rm{align-self:flex-start; min-height:44px; border:0; background:transparent; color:var(--danger); font:600 .8125rem var(--sans); padding:0; cursor:pointer}
+@media (max-width:759px){
+  #planRows .row{grid-template-columns:minmax(0,1fr) auto; padding-right:4px}
+}
+
+.subnav .segb span{font-size:.6875rem; color:var(--muted); opacity:1; min-height:1em}
+.subnav .segb[aria-pressed="true"] span{color:inherit; opacity:.8}
+.subnav .segb span:empty{display:none}
+
+.sheet-back{position:fixed; inset:0; z-index:70; background:rgba(0,0,0,.55)}
+.sheet-back[hidden]{display:none}
+.psheet{position:fixed; z-index:71; left:0; right:0; bottom:0; max-height:82vh; display:flex; flex-direction:column; gap:4px; background:var(--surface); border-radius:22px 22px 0 0; padding:10px 16px max(16px, env(safe-area-inset-bottom, 0px)); box-shadow:0 -10px 40px rgba(0,0,0,.4)}
+.psheet[hidden]{display:none}
+.psheet .grip{width:40px; height:4px; border-radius:2px; background:var(--line-strong); margin:0 auto 8px}
+.psheet h2{margin:0 0 4px; font:600 1rem var(--sans)}
+.sheet-list{overflow-y:auto; -webkit-overflow-scrolling:touch; min-height:0}
+.srw{display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:56px; border-top:1px solid var(--line)}
+.srw .nm{flex:1; min-width:0; font-size:.875rem; font-weight:600; overflow-wrap:anywhere}
+.srw.off .nm{color:var(--muted); font-weight:500}
+.srw .qty{flex:none; display:flex; align-items:center; background:transparent}
+.srw .qty .step{width:36px; height:44px; font-size:1.25rem}
+.srw .qty input{width:44px; height:44px; padding:0; text-align:center; font:500 1rem var(--mono)}
+.srw .qty .unit{width:3.2em; font-size:.6875rem; color:var(--muted); background:transparent}
+.psheet .btn.primary{margin-top:10px; min-height:48px; border-radius:14px}
+@media (min-width:760px){
+  .psheet{left:50%; right:auto; width:min(520px, 100%); transform:translateX(-50%)}
+}
+.plan-foot[hidden]{display:none !important}
+
+/* títulos que son enlaces */
+.tl{appearance:none; background:none; border:0; padding:6px 0; margin:0; font:inherit; color:inherit; text-align:left; cursor:pointer; text-decoration:underline; text-decoration-color:var(--accent); text-decoration-thickness:1.5px; text-underline-offset:4px; overflow-wrap:anywhere}
+.tl:hover,.tl:focus-visible{color:var(--accent)}
+.ing td.e .tl{font-weight:500}
+.otop .nm .tl{font-weight:700; font-size:1.0625rem}
+.ostep.pre .otop .nm .tl{font-weight:700}
 </style>
 </head>
 <body>
@@ -505,11 +693,12 @@ main{padding-block:18px 96px}
   <header class="top">
     <div class="brand"><h1>Producción de rolls</h1></div>
     <nav class="tabs" role="tablist" aria-label="Secciones">
-      <button class="tab" role="tab" id="tab-plan" data-tab="plan" aria-selected="true" aria-controls="view-plan">Plan</button>
-      <button class="tab" role="tab" id="tab-prod" data-tab="prod" aria-selected="false" aria-controls="view-prod">Producción</button>
-      <button class="tab" role="tab" id="tab-compras" data-tab="compras" aria-selected="false" aria-controls="view-compras">Compras</button>
-      <button class="tab" role="tab" id="tab-menu" data-tab="menu" aria-selected="false" aria-controls="view-menu">Menú</button>
+      <button class="tab" role="tab" id="tab-plan" data-tab="plan" aria-selected="true" aria-controls="view-plan"><svg class="ti" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14M5 12h14M5 17h9"/></svg><span>Plan</span></button>
+      <button class="tab" role="tab" id="tab-prod" data-tab="prod" aria-selected="false" aria-controls="view-prod"><svg class="ti" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h16M6 11v6a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-6M9 7l1-3h4l1 3"/></svg><span>Producción</span></button>
+      <button class="tab" role="tab" id="tab-compras" data-tab="compras" aria-selected="false" aria-controls="view-compras"><svg class="ti" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6h2l2 10h9l2-7H8"/><circle cx="10" cy="19.5" r="1"/><circle cx="17" cy="19.5" r="1"/></svg><span>Compras</span></button>
+      <button class="tab" role="tab" id="tab-menu" data-tab="menu" aria-selected="false" aria-controls="view-menu"><svg class="ti" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12v16H6zM9 9h6M9 13h6"/></svg><span>Menú</span></button>
     </nav>
+    <button type="button" class="pchip" id="planChip" hidden aria-haspopup="dialog" aria-expanded="false" aria-controls="planSheet" aria-label="Editar porciones del plan"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14M5 12h14M5 17h9"/></svg><span id="planChipTx"></span></button>
     <div class="menu hm" id="hm-plan"><button class="btn ghost ic" type="button" data-menu aria-haspopup="true" aria-expanded="false" aria-label="Más opciones del plan">&#8943;</button>
       <div class="menu-pop r" role="menu" hidden>
         <button type="button" class="menu-item" id="btnExp" role="menuitem">Exportar plan<small>Guarda el plan en un archivo</small></button>
@@ -570,7 +759,7 @@ main{padding-block:18px 96px}
       <div class="bar"><h2>Producción</h2><span class="sum grow" id="prodSum"></span></div>
       <div class="empty" id="prodEmpty" hidden>Todavía no hay nada para producir. Armá el plan con al menos un producto y una cantidad.</div>
       <div class="subnav seg" id="subnav" role="group" aria-label="Partes de la producción">
-        <button type="button" class="segb" data-sub="orden" aria-pressed="true">Orden</button>
+        <button type="button" class="segb" data-sub="orden" aria-pressed="true">Orden <span id="cntOrden"></span></button>
         <button type="button" class="segb" data-sub="cortes" aria-pressed="false">Cortes <span id="cntCortes"></span></button>
         <button type="button" class="segb" data-sub="inter" aria-pressed="false">Intermedios <span id="cntInter"></span></button>
         <button type="button" class="segb" data-sub="rolls" aria-pressed="false">Rolls <span id="cntRolls"></span></button>
@@ -601,6 +790,13 @@ main{padding-block:18px 96px}
 
   </main>
 </div>
+<div class="sheet-back" id="sheetBack" hidden></div>
+<aside class="psheet" id="planSheet" role="dialog" aria-modal="true" aria-labelledby="sheetT" hidden>
+  <div class="grip" aria-hidden="true"></div>
+  <h2 id="sheetT">Porciones del plan</h2>
+  <div class="sheet-list" id="sheetList"></div>
+  <button type="button" class="btn primary" id="sheetDone">Listo</button>
+</aside>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -705,19 +901,16 @@ function cutLabel(name, d){ return CAT[name] === FISH ? fishCutOf(d) : cutOf(d);
 var KEY = 'everlinks.finales.v1';
 function fByName(n){ for (var i = 0; i < FIN.length; i++) if (FIN[i].n === n) return FIN[i].id; return null; }
 var S = {
-  plan: [], have: {}, stock: {}, uw: {}, mise: {}, done: {}, example: true, checks: {},
+  plan: [], have: {}, stock: {}, uw: {}, mise: {}, done: {}, example: false, checks: {},
   mode: 'porc', cooks: 1, start: '', sub: 'orden', opts: {round:true, src:false, one:false, inter:true}
 };
-[['CARROT&CURRY ROLL', 2], ['BUENOS AIRES ROLL', 3], ['NIGUIRI DE SALMON ROSADO', 2]].forEach(function(e){
-  var id = fByName(e[0]); if (id) S.plan.push({k:'F', id:id, q:e[1]});
-});
 try {
   var raw = localStorage.getItem(KEY);
   if (raw) {
     var o = JSON.parse(raw);
     if (o && Array.isArray(o.plan)) {
       S.plan = o.plan.filter(function(p){ return p.k === 'F' ? byF[p.id] : byId[p.id]; });
-      S.example = !!o.example; S.checks = o.checks || {}; S.have = o.have || {}; S.mise = o.mise || {};
+      S.example = !!o.example; if (S.example) S.plan = []; S.checks = o.checks || {}; S.have = o.have || {}; S.mise = o.mise || {};
       S.stock = o.stock || {}; S.uw = o.uw || {}; S.done = o.done || {};
       if (o.mode === 'pzas') S.mode = 'pzas';
       if (o.cooks >= 1 && o.cooks <= 4) S.cooks = Math.floor(o.cooks);
@@ -944,7 +1137,7 @@ function setTab(t, keepScroll){
     $('#tab-' + n).setAttribute('aria-selected', n === t ? 'true' : 'false');
     $('#hm-' + n).hidden = n !== t;
   });
-  closeMenus();
+  closeMenus(); planSummary();
   if (t === 'plan') renderPlan();
   if (t === 'prod') renderProd();
   if (t === 'compras') renderShop();
@@ -976,7 +1169,7 @@ document.addEventListener('click', function(e){
   if (e.target.closest('.menu-item')) { setTimeout(function(){ closeMenus(); }, 0); return; }
   if (!e.target.closest('.menu-pop')) closeMenus();
 });
-document.addEventListener('keydown', function(e){ if (e.key === 'Escape') { closeMenus(); if (pickSel) closePicker(); } });
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') { closeMenus(); if (pickSel) closePicker(); if (sheetOpen) closeSheet(); } });
 
 /* ---------- plan: buscador (en el celular se eligen varios y se cierra con "Listo") */
 var hayF = {}, hayI = {};
@@ -1137,34 +1330,42 @@ function sauceIdx(f){
 var rxOpen = {};
 var DROP = '<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.2 6 10.5a6 6 0 0 1-12 0C6 9.2 12 3 12 3z"/></svg>';
 function rxInner(p){
-  var f = byF[p.id], q = factor(p), sa = sauceIdx(f), open = rxOpen[p.id] === true;
-  var chips = sa.length ? sa.map(function(ix){
-    var ln = f.i[ix];
-    return '<span class="sauce">' + DROP + '<span class="sl">Salsa</span><b>' + esc(ln.n) + '</b>' + (q && ln.q != null ? '<span class="sq">' + esc(lineQty(ln, q)) + '</span>' : '') + '</span>';
-  }).join('') : '<span class="nosauce">Sin salsa</span>';
-  var names = f.i.filter(function(ln, ix){ return sa.indexOf(ix) < 0; }).map(function(ln){ return ln.n; });
-  var short = names.slice(0, 5).join(', ') + (names.length > 5 ? '…' : '');
+  if (rxOpen[p.id] !== true) return '';
   var det = '';
-  if (open) det = '<table class="ing ing3 rxt"><thead><tr><th>Ingrediente</th><th>Total</th><th>Por porción</th></tr></thead><tbody>' + f.i.map(function(ln, ix){
-    return '<tr' + (sa.indexOf(ix) >= 0 ? ' class="sx"' : '') + '><td class="e">' + esc(ln.n) + '</td><td class="q">' + esc(lineQty(ln, q)) + '</td><td class="q p">' + esc(lineQty(ln, 1)) + '</td></tr>';
-  }).join('') + '</tbody></table>';
-  return '<div class="sauces">' + chips + '</div><div class="lleva"><span class="lt">Lleva: ' + esc(short) + '</span>' +
-    '<button type="button" class="link tg" data-act="more" aria-expanded="' + (open ? 'true' : 'false') + '">' + (open ? 'Ocultar' : 'Ver') + '</button></div>' + det;
+  if (p.k === 'F') {
+    var f = byF[p.id], q = factor(p), sa = sauceIdx(f);
+    var chips = sa.length ? sa.map(function(ix){
+      var ln = f.i[ix];
+      return '<span class="sauce">' + DROP + '<span class="sl">Salsa</span><b>' + esc(ln.n) + '</b>' + (q && ln.q != null ? '<span class="sq">' + esc(lineQty(ln, q)) + '</span>' : '') + '</span>';
+    }).join('') : '<span class="nosauce">Sin salsa</span>';
+    det = '<div class="sauces">' + chips + '</div>' +
+      '<table class="ing ing3 rxt"><thead><tr><th>Lleva</th><th>Total</th><th>Por porción</th></tr></thead><tbody>' + f.i.map(function(ln, ix){
+        return '<tr' + (sa.indexOf(ix) >= 0 ? ' class="sx"' : '') + '><td class="e">' + esc(ln.n) + '</td><td class="q">' + esc(lineQty(ln, q)) + '</td><td class="q p">' + esc(lineQty(ln, 1)) + '</td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+  else { var oo = byId[p.id]; det = '<p class="rbase">' + esc(oo.y ? 'Base: ' + fmtQty(oo.y, oo.yu) : 'Sin rendimiento: se cargan tandas') + '</p>'; }
+  return det + '<button type="button" class="rm" data-act="del">Quitar del plan</button>';
+}
+function rowType(p){
+  if (p.k !== 'F') return 'int';
+  try { return menuInfo(byF[p.id]).type; } catch (e) { return 'veg'; }
 }
 function rowHtml(p){
-  var o = obj(p), isF = p.k === 'F', f = factor(p), meta = '', rx = '';
+  var o = obj(p), isF = p.k === 'F', meta = '', open = rxOpen[p.id] === true;
   if (isF) {
-    meta = '<span class="fv">' + totalText(p) + '</span>';
-    rx = '<div class="rx">' + rxInner(p) + '</div>';
+    var sa = sauceIdx(byF[p.id]), sc = '';
+    if (sa.length) sc = '<span class="sauce mini">' + DROP + '<b>' + esc(byF[p.id].i[sa[0]].n) + '</b>' + (sa.length > 1 ? '<span class="sq">+' + (sa.length - 1) + '</span>' : '') + '</span>';
+    meta = '<span class="fv">' + totalText(p) + '</span>' + sc;
   } else {
-    meta = '<span class="badge ok">Intermedio</span><span>' + esc(o.y ? 'Base: ' + fmtQty(o.y, o.yu) : 'Sin rendimiento: se cargan tandas') + '</span><span class="fv">' + totalText(p) + '</span>';
+    meta = '<span class="badge ok">Intermedio</span><span class="fv">' + totalText(p) + '</span>';
   }
-  return '<article class="row" data-k="' + p.k + '" data-id="' + o.id + '"><div class="row-main"><h3>' + esc(o.n) + '</h3><p class="meta">' + meta + '</p></div>' +
+  return '<article class="row t-' + rowType(p) + (open ? ' open' : '') + '" data-k="' + p.k + '" data-id="' + o.id + '">' +
+    '<button type="button" class="rmain" data-act="more" aria-expanded="' + (open ? 'true' : 'false') + '" aria-label="Ver detalle de ' + esc(o.n) + '"><span class="rn">' + esc(o.n) + '</span><span class="meta">' + meta + '</span></button>' +
     '<div class="qty"><button type="button" class="step" data-act="dec" aria-label="Una unidad menos">&minus;</button>' +
     '<input class="qin" type="text" inputmode="decimal" autocomplete="off" aria-label="Cantidad de ' + esc(o.n) + '" value="' + inputText(dispQ(p)) + '">' +
     '<span class="unit">' + esc(unitOf(p)) + '</span>' +
     '<button type="button" class="step" data-act="inc" aria-label="Una unidad más">+</button></div>' +
-    '<button type="button" class="x" data-act="del" aria-label="Quitar ' + esc(o.n) + ' del plan">&times;</button>' + rx + '</article>';
+    '<div class="rx">' + rxInner(p) + '</div></article>';
 }
 function renderPlan(autoOpen){
   var has = S.plan.length > 0;
@@ -1178,7 +1379,47 @@ function planSummary(){
   var a = activePlan().length, n = S.plan.length, pzs = 0;
   activePlan().forEach(function(p){ if (p.k === 'F' && byF[p.id].pz) pzs += factor(p) * byF[p.id].pz; });
   $('#planSum').textContent = !n ? '' : n + (n === 1 ? ' producto' : ' productos') + (pzs ? ' · ' + num(pzs, 0) + ' piezas' : '') + (a < n ? ' · ' + (n - a) + ' sin cantidad' : '');
+  var chip = $('#planChip'); chip.hidden = !n;
+  if (n) $('#planChipTx').textContent = n + ' prod' + (pzs ? ' · ' + num(pzs, 0) + ' pzas' : '');
 }
+/* hoja inferior: editar cantidades desde cualquier pestaña */
+function sheetRows(){
+  return S.plan.map(function(p){
+    var o = obj(p);
+    return '<div class="srw' + (p.q ? '' : ' off') + '" data-k="' + p.k + '" data-id="' + o.id + '"><span class="nm">' + esc(o.n) + '</span>' +
+      '<div class="qty"><button type="button" class="step" data-act="dec" aria-label="Una unidad menos de ' + esc(o.n) + '">&minus;</button>' +
+      '<input class="qin" type="text" inputmode="decimal" autocomplete="off" aria-label="Cantidad de ' + esc(o.n) + '" value="' + inputText(dispQ(p)) + '">' +
+      '<span class="unit">' + esc(unitOf(p)) + '</span>' +
+      '<button type="button" class="step" data-act="inc" aria-label="Una unidad más de ' + esc(o.n) + '">+</button></div></div>';
+  }).join('');
+}
+var sheetOpen = false;
+function openSheet(){
+  if (!S.plan.length) return;
+  sheetOpen = true; $('#sheetList').innerHTML = sheetRows();
+  $('#sheetBack').hidden = false; $('#planSheet').hidden = false; $('#planChip').setAttribute('aria-expanded', 'true');
+  var f = $('#sheetDone'); if (f) f.focus();
+}
+function closeSheet(){
+  if (!sheetOpen) return;
+  sheetOpen = false; $('#sheetBack').hidden = true; $('#planSheet').hidden = true; $('#planChip').setAttribute('aria-expanded', 'false');
+  setTab(tab, true);
+}
+$('#planChip').addEventListener('click', function(){ sheetOpen ? closeSheet() : openSheet(); });
+$('#sheetBack').addEventListener('click', closeSheet);
+$('#sheetDone').addEventListener('click', closeSheet);
+$('#sheetList').addEventListener('input', function(e){
+  if (!e.target.classList.contains('qin')) return;
+  var r = e.target.closest('.srw'), p = planOf(r.dataset.k, r.dataset.id);
+  p.q = fromDisp(p, parseNum(e.target.value)); r.classList.toggle('off', !p.q); touch(); planSummary();
+});
+$('#sheetList').addEventListener('click', function(e){
+  var b = e.target.closest('button[data-act]'); if (!b) return;
+  var r = b.closest('.srw'), p = planOf(r.dataset.k, r.dataset.id), act = b.dataset.act;
+  var base = p.k === 'F' ? 1 : (byId[p.id].y || 1), cur = dispQ(p) || 0;
+  var nv = Math.max(0, Math.round((cur + (act === 'inc' ? base : -base)) * 10000) / 10000);
+  p.q = fromDisp(p, nv); r.querySelector('.qin').value = inputText(nv); r.classList.toggle('off', !p.q); touch(); planSummary();
+});
 $('#btnMode').addEventListener('click', function(){
   S.mode = S.mode === 'pzas' ? 'porc' : 'pzas'; save(); renderPlan(false);
 });
@@ -1191,7 +1432,7 @@ $('#planRows').addEventListener('input', function(e){
 $('#planRows').addEventListener('click', function(e){
   var b = e.target.closest('button[data-act]'); if (!b) return;
   var row = b.closest('.row'), p = planOf(row.dataset.k, row.dataset.id), act = b.dataset.act;
-  if (act === 'more') { rxOpen[p.id] = !(rxOpen[p.id] === true); row.querySelector('.rx').innerHTML = rxInner(p); return; }
+  if (act === 'more') { var op = !(rxOpen[p.id] === true); rxOpen[p.id] = op; row.classList.toggle('open', op); b.setAttribute('aria-expanded', op ? 'true' : 'false'); row.querySelector('.rx').innerHTML = rxInner(p); return; }
   if (act === 'del') { S.plan = S.plan.filter(function(x){ return x !== p; }); touch(); renderPlan(false); return; }
   var base = p.k === 'F' ? 1 : (byId[p.id].y || 1), cur = dispQ(p) || 0;
   var nv = Math.max(0, Math.round((cur + (act === 'inc' ? base : -base)) * 10000) / 10000);
@@ -1276,25 +1517,22 @@ function ordenHtml(c){
   var asm = 0; activePlan().forEach(function(p){ if (p.k === 'F' && byF[p.id].pz) asm += factor(p) * byF[p.id].pz; });
   h += '<p class="osum"><strong>Todo listo en ≈ ' + esc(fmtDur(sch.total)) + '</strong>' + (/^\d{2}:\d{2}$/.test(S.start) ? ' · terminás a las ' + esc(clockOf(sch.total)) : '') +
     ' · ' + sch.tasks.length + (sch.tasks.length === 1 ? ' preparación' : ' preparaciones') + '</p>';
-  h += '<div class="ostep pre"><div class="otime"><b>' + esc(clockOf(0)) + '</b></div><div class="obody"><div class="otop"><span class="nm">Antes de arrancar: cortes y mise en place</span></div>' +
-    '<div class="ometa">' + (cut ? cut + ' ingredientes para cortar y pesar.' : 'No hay cortes para este plan.') + '</div>' +
-    (cut ? '<button type="button" class="link" data-sub="cortes">Ver cortes</button>' : '') + '</div></div>';
+  h += '<div class="ostep pre"><div class="otime"><b>' + esc(clockOf(0)) + '</b></div><div class="obody"><div class="otop"><span class="nm">' + (cut ? '<button type="button" class="tl" data-sub="cortes">Antes de arrancar: cortes y mise en place</button>' : 'Antes de arrancar: cortes y mise en place') + '</span></div>' +
+    '<div class="ometa">' + (cut ? cut + ' ingredientes para cortar y pesar.' : 'No hay cortes para este plan.') + '</div></div></div>';
   sch.tasks.forEach(function(t){
     var r = byId[t.id], n = c.need[t.id], dn = !!S.done[t.id];
     var meta = '<span class="cookb">' + (multi ? 'Persona ' + (t.cook + 1) + ' · ' : '') + '</span>Trabajo ≈ ' + fmtDur(t.act) + ' → ' + esc(clockOf(t.end)) +
       (t.wait ? ' · luego espera ≈ ' + fmtDur(t.wait) + ' → listo ' + esc(clockOf(t.done)) : '');
     var dur = t.during.map(function(id){ return byId[id].n; });
     h += '<div class="ostep' + (dn ? ' done' : '') + '"><label class="otime"><input type="checkbox" data-done="' + t.id + '"' + (dn ? ' checked' : '') + ' aria-label="Marcar hecho: ' + esc(r.n) + '"><b>' + esc(clockOf(t.start)) + '</b></label>' +
-      '<div class="obody"><div class="otop"><span class="nm">' + esc(r.n) + '</span><span class="need">' + esc(needText(t.id, n.net)) + '</span></div>' +
+      '<div class="obody"><div class="otop"><span class="nm"><button type="button" class="tl" data-goto="' + t.id + '">' + esc(r.n) + '</button></span><span class="need">' + esc(needText(t.id, n.net)) + '</span></div>' +
       '<div class="ometa">' + meta + '</div>' +
       (t.idle > 0 ? '<div class="oidle">Antes: pausa de ' + esc(fmtDur(t.idle)) + ' esperando que termine un paso anterior.</div>' : '') +
       (dur.length ? '<div class="owait">Mientras esperás: ' + esc(dur.join(' · ')) + '</div>' : '') +
-      '<div class="ofor">Para: ' + esc(forText(Object.keys(n.from))) + '</div>' +
-      '<button type="button" class="link" data-goto="' + t.id + '">Ver receta</button></div></div>';
+      '<div class="ofor">Para: ' + esc(forText(Object.keys(n.from))) + '</div></div></div>';
   });
-  h += '<div class="ostep pre"><div class="otime"><b>' + esc(clockOf(sch.total)) + '</b></div><div class="obody"><div class="otop"><span class="nm">Armar los rolls</span>' +
-    (asm ? '<span class="need">' + esc(num(asm, 0)) + ' piezas</span>' : '') + '</div><div class="ometa">Con todos los intermedios listos. Las cantidades por porción están en la solapa Rolls.</div>' +
-    '<button type="button" class="link" data-sub="rolls">Ver rolls</button></div></div>';
+  h += '<div class="ostep pre"><div class="otime"><b>' + esc(clockOf(sch.total)) + '</b></div><div class="obody"><div class="otop"><span class="nm"><button type="button" class="tl" data-sub="rolls">Armar los rolls</button></span>' +
+    (asm ? '<span class="need">' + esc(num(asm, 0)) + ' piezas</span>' : '') + '</div><div class="ometa">Con todos los intermedios listos. Las cantidades por porción están en la solapa Rolls.</div></div></div>';
   h += '<details class="hintd"><summary>Cómo se calculan los tiempos</summary><p class="hint">Los tiempos son una estimación: cada preparación suma 10 min de trabajo (más si es mucha cantidad) y las esperas se toman de los minutos y horas que figuran en el procedimiento del cuaderno. Donde el cuaderno no indica tiempos, no se cuenta espera. El orden pone primero lo que más tarda y lo que otras preparaciones necesitan.</p></details>';
   return h;
 }
@@ -1350,22 +1588,19 @@ function kvHtml(rows){
 function rollHtml(p){
   var f = byF[p.id], q = factor(p), op = openSt[p.id] !== false;
   var ing = f.i.map(function(ln){
-    var l = ln.l, tag = '';
-    if (l.t === 'M') tag = '<button type="button" class="tag-m lnk" data-goto="' + l.r + '">→ Receta: ' + esc(byId[l.r].n) + (S.have[l.r] ? ' (ya lo tenés)' : '') + '</button>';
+    var l = ln.l, tag = '', nm = esc(ln.n);
+    if (l.t === 'M') { nm = '<button type="button" class="tl" data-goto="' + l.r + '">' + nm + '</button>'; if (S.have[l.r]) tag = '<span class="tag-m" style="color:var(--muted)">ya lo tenés</span>'; }
     else if (l.t === 'X') tag = '<span class="tag-x">Sin receta en el libro de intermedios</span>';
     else if (l.t === 'MU') tag = '<span class="tag-x">Falta pasar unidades a la receta ' + esc(byId[l.r].n) + '</span>';
-    else if (l.t === 'RAW' && l.n !== ln.n) tag = '<span class="tag-m" style="color:var(--muted)">Se compra como: ' + esc(l.n) + '</span>';
-    return '<tr><td class="e">' + esc(ln.n) + (ln.d ? '<small>' + esc(ln.d) + '</small>' : '') + (l.w && l.t !== 'RAW' ? '<small>' + esc(l.w) + '</small>' : '') + tag + '</td>' +
+    return '<tr><td class="e">' + nm + (ln.d ? '<small>' + esc(ln.d) + '</small>' : '') + tag + '</td>' +
       '<td class="q">' + esc(lineQty(ln, q)) + '</td><td class="q p">' + esc(lineQty(ln, 1)) + '</td></tr>';
   }).join('');
   return '<details class="icard fcard" id="rc-' + f.id + '" data-id="' + f.id + '"' + (op ? ' open' : '') + '><summary><span class="sm"><span class="nm">' + esc(f.n) + '</span>' +
     '<span class="for">' + esc(num(q, 2) + ' ' + plural(q, 'porciones') + (f.pz ? ' · ' + num(q * f.pz, 1) + ' piezas (1 porción = ' + f.pz + ')' : '')) + '</span></span></summary><div class="ibody">' +
     (f.nt ? '<p class="yields" style="margin-top:0">' + esc(f.nt) + '</p>' : '') +
     '<table class="ing ing3"><thead><tr><th>Ingrediente</th><th>Total</th><th>Por porción</th></tr></thead><tbody>' + ing + '</tbody></table>' +
-    (f.desc ? '<h4 class="lbl">Descripción</h4><p class="proc">' + esc(f.desc) + '</p>' : '') +
     (f.nota ? '<h4 class="lbl">Armado</h4><p class="proc">' + esc(f.nota) + '</p>' : '') +
-    (f.aud.length ? '<h4 class="lbl">Parámetros de auditoría</h4>' + kvHtml(f.aud) : '') +
-    (f.serv.length ? '<h4 class="lbl">Servicio y rotulado</h4>' + kvHtml(f.serv) : '') +
+    (function(){ var sv = f.serv.filter(function(x){ return /^(Durabilidad|Temperatura)/.test(x[0]); }); return sv.length ? kvHtml(sv) : ''; })() +
     (f.av.length ? '<p class="aviso"><b>Verificar:</b> ' + esc(f.av.join(' ')) + '</p>' : '') + '</div></details>';
 }
 function rollsHtml(){
@@ -1382,6 +1617,15 @@ function renderProd(){
   var nF = a.filter(function(p){ return p.k === 'F'; }).length;
   $('#prodSum').textContent = has ? nInt + (nInt === 1 ? ' preparación' : ' preparaciones') + ' para ' + a.length + (a.length === 1 ? ' producto' : ' productos') : '';
   
+  if (has) {
+    var sch = schedule(c, S.cooks), mi = miseList(c, VEG).concat(miseList(c, FISH)), lv = levels(c), ids = [];
+    Object.keys(lv).forEach(function(k){ ids = ids.concat(lv[k]); });
+    var cnt = function(d, t){ return t ? d + '/' + t : ''; };
+    $('#cntOrden').textContent = cnt(sch.tasks.filter(function(t){ return S.done[t.id]; }).length, sch.tasks.length);
+    $('#cntCortes').textContent = cnt(mi.filter(function(t){ return S.mise[t.e]; }).length, mi.length);
+    $('#cntInter').textContent = cnt(ids.filter(function(id){ return c.need[id] && c.need[id].net <= 0; }).length, ids.length);
+    $('#cntRolls').textContent = String(nF || '');
+  }
   document.querySelectorAll('.segb[data-sub]').forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.sub === S.sub ? 'true' : 'false'); });
   $('#optInter').checked = !!S.opts.inter;
   $('#prodBody').innerHTML = !has ? '' : S.sub === 'orden' ? ordenHtml(c) : S.sub === 'cortes' ? cortesHtml(c) : S.sub === 'inter' ? interHtml(c) : rollsHtml();
@@ -1803,7 +2047,7 @@ function buildProdPDF(){
       setF(doc, 'bold', 6.5, 120); doc.text('TOTAL', W - M, y + 2.5, {align:'right'}); doc.text('POR PORCION', W - M - 30, y + 2.5, {align:'right'}); y += 3.5;
       f.i.forEach(function(ln){
         var l = ln.l, tag = l.t === 'M' ? 'INTERMEDIO' : l.t === 'RAW' ? 'COMPRA' : l.t === 'X' ? 'SIN RECETA' : 'REVISAR';
-        var sub = l.t === 'M' ? 'Receta: ' + byId[l.r].n + (S.have[l.r] ? ' (ya lo tenes)' : '') : l.t === 'RAW' ? (l.n !== ln.n ? 'Se compra como: ' + l.n : '') : l.t === 'X' ? 'No esta en el libro de intermedios' : 'Falta pasar unidades: ' + byId[l.r].n;
+        var sub = l.t === 'M' ? 'Receta: ' + byId[l.r].n + (S.have[l.r] ? ' (ya lo tenes)' : '') : l.t === 'RAW' ? '' : l.t === 'X' ? 'No esta en el libro de intermedios' : 'Falta pasar unidades: ' + byId[l.r].n;
         var qt = pdfSafe(lineQty(ln, q)), pq = pdfSafe(lineQty(ln, 1)), qW = tw(doc, qt, 'bold', 9.5);
         setF(doc, 'normal', 9.5); var nl = doc.splitTextToSize(pdfSafe(ln.n), cw - 24 - Math.max(qW, 30) - 36);
         setF(doc, 'normal', 7.5); var sl = sub ? doc.splitTextToSize(pdfSafe(sub), cw - 24 - 36) : [];
@@ -1841,7 +2085,6 @@ function buildProdPDF(){
 /* ---------- PDF: recetas (una ficha normalizada sirve para finales e intermedios) */
 function sheetF(p){
   var f = byF[p.id], q = factor(p);
-  var meta = f.aud.map(function(x){ return x[0] + ': ' + x[1]; });
   var blocks = [];
   if (f.desc) blocks.push(['DESCRIPCION', f.desc]);
   if (f.nota) blocks.push(['ARMADO', f.nota]);
@@ -1854,7 +2097,7 @@ function sheetF(p){
       else if (l.t === 'X') tag = '(sin receta en el libro)';
       return {name: ln.n, qty: lineQty(ln, q), per: lineQty(ln, 1), det: [ln.d, tag].filter(Boolean).join(' | ')};
     }),
-    blocks: blocks, meta: [meta.join('   |   ')].concat(f.serv.map(function(x){ return x[0] + ': ' + x[1]; })).filter(Boolean),
+    blocks: blocks, meta: f.serv.filter(function(x){ return /^(Durabilidad|Temperatura)/.test(x[0]); }).map(function(x){ return x[0] + ': ' + x[1]; }),
     av: f.av.join(' ')
   };
 }
@@ -2281,8 +2524,8 @@ $('#fileImp').addEventListener('change', function(){
 });
 
 /* ---------- arranque */
-renderPlan(true);
-window.__app = {buildMenuPDF: buildMenuPDF, menuDump: function(){ return FIN.map(function(f){ var I = menuInfo(f); return {id: f.id, pg: f.pg, sec: f.sec, n: f.n, type: I.type, al: Object.keys(I.al), ev: I.ev, pic: I.pic, raw: I.raw, hot: I.hot, veg: I.veg, vgn: I.vgn, mod: I.mod, sauce: sauceIdx(f).map(function(i){ return f.i[i].n; }), temp: servOf(f, 'Temperatura'), desc: f.desc}; }); }, importPlan: importPlan, planFileText: planFileText, buildProdPDF: buildProdPDF, S: function(){ return S; }, compute: compute, groupsOf: groupsOf, buildShopPDF: buildShopPDF, buildRecipesPDF: buildRecipesPDF,
+renderPlan(false);
+window.__app = {buildMenuPDF: buildMenuPDF, buildRecipesPDF: buildRecipesPDF, menuDump: function(){ return FIN.map(function(f){ var I = menuInfo(f); return {id: f.id, pg: f.pg, sec: f.sec, n: f.n, type: I.type, al: Object.keys(I.al), ev: I.ev, pic: I.pic, raw: I.raw, hot: I.hot, veg: I.veg, vgn: I.vgn, mod: I.mod, sauce: sauceIdx(f).map(function(i){ return f.i[i].n; }), temp: servOf(f, 'Temperatura'), desc: f.desc}; }); }, importPlan: importPlan, planFileText: planFileText, buildProdPDF: buildProdPDF, S: function(){ return S; }, compute: compute, groupsOf: groupsOf, buildShopPDF: buildShopPDF, buildRecipesPDF: buildRecipesPDF,
   setTab: setTab, setSub: setSub, byId: byId, byF: byF, FIN: FIN, ORDER: ORDER, levels: levels, schedule: schedule, waitOf: waitOf};
 })();
 
