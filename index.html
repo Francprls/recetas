@@ -749,6 +749,10 @@ body{letter-spacing:0}
 .gh-h{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 10px; background:var(--bg); border-radius:12px}
 .gh-h div{display:grid; min-width:0} .gh-h small{color:var(--muted); font-size:.75rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .gh-h span{display:flex; gap:6px; flex:none}
+
+.bbt{display:flex; gap:8px; width:100%; order:3}
+.bbt .btn{flex:1 1 0; min-width:0; padding:9px 10px; font-size:.875rem}
+@media (min-width:700px){ .bbt{width:auto; order:0} .bbt .btn{flex:none; padding:9px 16px; font-size:.9375rem} }
 </style>
 </head>
 <body>
@@ -843,7 +847,7 @@ body{letter-spacing:0}
 
     <!-- MENÚ -->
     <section id="view-menu" role="tabpanel" aria-labelledby="tab-menu" hidden>
-      <div class="bar"><h2>Menú</h2><span class="sum grow" id="menuSum"></span><button class="btn primary" id="pdfMenu" type="button">PDF para celular</button></div>
+      <div class="bar"><h2>Menú</h2><span class="sum grow" id="menuSum"></span><span class="bbt"><button class="btn" id="htmlMenu" type="button">HTML para compartir</button><button class="btn primary" id="pdfMenu" type="button">PDF para celular</button></span></div>
       <div class="mfilter" id="mFilter" hidden>
         <div class="mf-scroll" role="group" aria-label="Filtrar por comensal">
           <span class="mf-t">Sin</span><span class="mf-in" id="mfAvoid"></span><span class="mf-t">Solo</span><span class="mf-in" id="mfDiet"></span>
@@ -965,13 +969,24 @@ function isCutCat(name){ return CAT[name] === VEG || CAT[name] === FISH; }
 function cutLabel(name, d){ return CAT[name] === FISH ? fishCutOf(d) : cutOf(d); }
 
 /* ---------- estado */
-var KEY = 'everlinks.finales.v1';
+var KEY = 'rolls.finales.v1';
+/* Datos guardados con un nombre de clave anterior: se copian una sola vez a la clave actual (se reconocen por el sufijo). */
+function lsMigrate(newKey, suffix){
+  try {
+    if (localStorage.getItem(newKey) != null) return;
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (k && k !== newKey && k.length > suffix.length && k.slice(-suffix.length) === suffix) { localStorage.setItem(newKey, localStorage.getItem(k)); return; }
+    }
+  } catch (e) {}
+}
 function fByName(n){ for (var i = 0; i < FIN.length; i++) if (FIN[i].n === n) return FIN[i].id; return null; }
 var S = {
   plan: [], have: {}, stock: {}, uw: {}, mise: {}, done: {}, example: false, checks: {},
   mode: 'porc', cooks: 1, start: '', sub: 'orden', opts: {round:true, src:false, one:false, inter:true}
 };
 try {
+  lsMigrate(KEY, '.finales.v1');
   var raw = localStorage.getItem(KEY);
   if (raw) {
     var o = JSON.parse(raw);
@@ -1726,7 +1741,7 @@ $('#optInter').addEventListener('change', function(){ S.opts.inter = this.checke
 var dlP = null, dlOk = true;
 /* Fuera de claude.ai (archivo .html abierto directo) no existe window.claude: se descarga con un enlace normal */
 function browserDownloader(){
-  var MIME = {pdf:'application/pdf', json:'application/json'};
+  var MIME = {pdf:'application/pdf', json:'application/json', html:'text/html;charset=utf-8'};
   return {save: function(o){
     var ext = String(o.filename).split('.').pop().toLowerCase();
     var blob = new Blob([o.data], {type: MIME[ext] || 'application/octet-stream'});
@@ -1742,7 +1757,7 @@ function dlCap(){
   return dlP;
 }
 dlCap().then(function(d){
-  if (!d) { dlOk = false; ['pdfRec','pdfProd','btnExp','pdfMenu'].forEach(function(id){ $('#' + id).title = 'La descarga de PDF no está disponible en esta vista.'; }); }
+  if (!d) { dlOk = false; ['pdfRec','pdfProd','btnExp','pdfMenu','htmlMenu'].forEach(function(id){ $('#' + id).title = 'La descarga no está disponible en esta vista.'; }); }
 });
 function pdfSafe(s){
   return String(s == null ? '' : s).replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/[–—−]/g, '-').replace(/→/g, '->').replace(/½/g, '1/2')
@@ -2402,6 +2417,131 @@ $('#view-menu').addEventListener('click', function(e){
 });
 $('#mToggleAll').addEventListener('click', function(){ menuF.all = !menuF.all; if (!menuF.all) menuF.open = {}; renderMenu(); });
 $('#mClear').addEventListener('click', function(){ menuF.avoid = {}; menuF.diet = ''; renderMenu(); });
+/* ---------- menú como HTML para compartir
+   Archivo único, sin dependencias: lleva los datos del menú de este plan, el mismo diseño y los mismos filtros (alérgenos, picante, vegetariano, vegano).
+   menuShareRuntime se serializa tal cual dentro del archivo: no puede usar nada de afuera. */
+function menuShareRuntime(D){
+  function $(s){ return document.querySelector(s); }
+  function esc(s){ return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  var F = {avoid: {}, diet: '', open: {}, all: false}, ALGL = D.alg, ROLE_L = [['rel','Relleno e ingredientes',150], ['sal','Salsa',70], ['top','Top y decoración',300], ['base','Base',0]];
+  D.filt.avoid.forEach(function(k){ F.avoid[k] = true; }); F.diet = D.filt.diet || '';
+  function avoidKeys(){ return Object.keys(F.avoid).filter(function(k){ return F.avoid[k]; }); }
+  function algName(k){ if (k === 'pic') return 'picante'; var r = ''; ALGL.forEach(function(a){ if (a.k === k) r = a.n.toLowerCase(); }); return r || k; }
+  function verdict(I){
+    var bad = [];
+    avoidKeys().forEach(function(k){ if (k === 'pic' ? I.pic : I.al[k]) bad.push(k); });
+    if (F.diet === 'vgn' && !I.vgn) bad.push('no vegano');
+    if (F.diet === 'veg' && !I.veg) bad.push('no vegetariano');
+    return bad;
+  }
+  function tags(I){
+    var t = [];
+    if (I.vgn) t.push('<span class="tg2 vgn">&#10047; Vegano</span>');
+    else if (I.veg) t.push('<span class="tg2 vgt">&#10047; Vegetariano</span>');
+    if (I.pic === 2) t.push('<span class="tg2 pic">&#9650; Picante</span>');
+    else if (I.pic === 1) t.push('<span class="tg2 pic mild">&#9651; Toque picante</span>');
+    if (I.raw) t.push('<span class="tg2 raw">&#9679; Crudo</span>');
+    else if (I.type === 'cook') t.push('<span class="tg2 cook">&#9680; Cocido</span>');
+    if (I.hot) t.push('<span class="tg2 hot">&#9830; Se sirve caliente</span>');
+    if (I.mod) t.push('<span class="tg2 mod">&#8644; Admite cambios</span>');
+    return t.join('');
+  }
+  function card(I, showSec){
+    var op = F.all || F.open[I.id] === true, filt = avoidKeys().length || F.diet;
+    var bad = filt ? verdict(I) : [], cls = filt ? (bad.length ? ' no' : ' ok') : '';
+    var chips = ALGL.filter(function(a){ return I.al[a.k]; }).map(function(a){
+      return '<span class="al' + (F.avoid[a.k] ? ' hit' : '') + '" style="--h:' + a.h + '" title="' + esc((I.ev[a.k] || []).join(', ')) + '">' + esc(a.n) + '</span>';
+    }).join('');
+    var alRow = '<div class="mal">' + (chips ? '<span class="mal-l">Contiene</span>' + chips : '<span class="mal-l none">&#10003; Sin gluten, lácteos, huevo, pescado, mariscos, soja, sésamo ni frutos secos</span>') + '</div>';
+    var vd = !filt ? '' : bad.length ? '<div class="mv no">&#10007; No apto: ' + esc(bad.map(function(k){ return k.indexOf('no ') === 0 ? k : 'contiene ' + algName(k); }).join(' · ')) + '</div>' : '<div class="mv ok">&#10003; Apto para este comensal</div>';
+    var how = I.how === 'aparte' ? ' <span class="how">servida aparte</span>' : I.how === 'dentro' ? ' <span class="how">por dentro</span>' : I.how === 'sobre' ? ' <span class="how">sobre la pieza</span>' : '';
+    var det = '';
+    if (op) {
+      det = '<div class="mdet">' + ROLE_L.map(function(r){
+        var a = I.roles[r[0]]; if (!a || !a.length) return '';
+        return '<div class="mrole" style="--h:' + r[2] + '"><span class="rl">' + r[1] + '</span><span class="rv">' + a.map(esc).join(' &middot; ') + (r[0] === 'sal' ? how : '') + '</span></div>';
+      }).join('') + '<div class="mwhy"><b>Por qué se marcó:</b> ' + (ALGL.filter(function(a){ return I.al[a.k]; }).map(function(a){ return esc(a.n) + ' &larr; ' + esc((I.ev[a.k] || []).join(', ')); }).join(' &nbsp;|&nbsp; ') || 'no se encontró ningún alérgeno en las recetas') + (I.pic ? '<br>' + (I.pic === 2 ? 'Picante' : 'Toque picante') + ' &larr; ' + esc((I.ev.pic || []).join(', ')) : '') + '</div></div>';
+    }
+    var pz = I.pz ? I.pz + (I.pz === 1 ? ' pieza' : ' piezas') : '';
+    return '<article class="mc t-' + I.type + cls + '" data-id="' + esc(I.id) + '"><header class="mh"><h3>' + (showSec ? '<span class="msc">' + esc(I.sec) + '</span>' : '') + esc(I.n) + '</h3><span class="mpz">' + esc(pz) + '</span></header>' +
+      '<div class="mtags">' + tags(I) + '</div>' + vd + alRow +
+      '<button type="button" class="link tg" data-act="mdet" aria-expanded="' + (op ? 'true' : 'false') + '">' + (op ? 'Ocultar detalle' : 'Ver detalle: relleno, salsa y alérgenos') + '</button>' + det + '</article>';
+  }
+  function render(){
+    var fins = D.fins, n = fins.length;
+    $('#menuSum').textContent = n + (n === 1 ? ' producto' : ' productos');
+    $('#mfAvoid').innerHTML = ALGL.concat([{k:'pic', n:'Picante', h:20}]).map(function(a){
+      return '<button type="button" class="mfb" style="--h:' + a.h + '" data-avoid="' + a.k + '" aria-pressed="' + (F.avoid[a.k] ? 'true' : 'false') + '">' + esc(a.n) + '</button>';
+    }).join('');
+    $('#mfDiet').innerHTML = [['veg','Vegetariano'],['vgn','Vegano']].map(function(d){
+      return '<button type="button" class="mfb diet" data-diet="' + d[0] + '" aria-pressed="' + (F.diet === d[0] ? 'true' : 'false') + '">' + d[1] + '</button>';
+    }).join('') + '<button type="button" class="mfb clr" data-clear="1"' + (avoidKeys().length || F.diet ? '' : ' disabled') + '>Vaciar</button>';
+    var filt = avoidKeys().length || F.diet, ok = 0;
+    if (filt) fins.forEach(function(I){ if (!verdict(I).length) ok++; });
+    var vd = $('#mVerdict'); vd.hidden = !filt;
+    if (filt) {
+      var parts = avoidKeys().map(function(k){ return 'sin ' + algName(k); }); if (F.diet) parts.push(F.diet === 'vgn' ? 'vegano' : 'vegetariano');
+      vd.className = 'mverdict ' + (ok ? 'ok' : 'no');
+      vd.innerHTML = '<b>' + ok + ' de ' + n + '</b> ' + (ok === 1 ? 'apto' : 'aptos') + ' · ' + esc(parts.join(', '));
+    }
+    var html = '', ordered = [];
+    D.secs.forEach(function(sec){ fins.forEach(function(I){ if (I.sec === sec) ordered.push(I); }); });
+    if (filt) {
+      var okL = ordered.filter(function(I){ return !verdict(I).length; }), noL = ordered.filter(function(I){ return verdict(I).length; });
+      if (okL.length) html += '<section class="msec"><h3 class="msh ok">&#10003; Aptos <span>' + okL.length + '</span></h3>' + okL.map(function(I){ return card(I, true); }).join('') + '</section>';
+      if (noL.length) html += '<section class="msec"><h3 class="msh no">&#10007; No aptos <span>' + noL.length + '</span></h3>' + noL.map(function(I){ return card(I, true); }).join('') + '</section>';
+    } else {
+      D.secs.forEach(function(sec){
+        var list = ordered.filter(function(I){ return I.sec === sec; });
+        if (!list.length) return;
+        html += '<section class="msec"><h3 class="msh">' + esc(sec) + ' <span>' + list.length + '</span></h3>' + list.map(function(I){ return card(I, false); }).join('') + '</section>';
+      });
+    }
+    $('#menuBody').innerHTML = html;
+    $('#mToggleAll').textContent = F.all ? 'Ocultar el detalle de todos' : 'Ver el detalle de todos';
+  }
+  function setTop(){ document.documentElement.style.setProperty('--topH', $('.top').offsetHeight + 'px'); }
+  $('#view-menu').addEventListener('click', function(e){
+    var b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.clear) { F.avoid = {}; F.diet = ''; render(); return; }
+    if (b.dataset.avoid) { F.avoid[b.dataset.avoid] = !F.avoid[b.dataset.avoid]; render(); return; }
+    if (b.dataset.diet) { F.diet = F.diet === b.dataset.diet ? '' : b.dataset.diet; render(); return; }
+    if (b.id === 'mToggleAll') { F.all = !F.all; if (!F.all) F.open = {}; render(); return; }
+    if (b.dataset.act === 'mdet') {
+      var id = b.closest('.mc').dataset.id;
+      if (F.all) { F.all = false; D.fins.forEach(function(I){ F.open[I.id] = true; }); F.open[id] = false; }
+      else F.open[id] = !(F.open[id] === true);
+      render();
+    }
+  });
+  window.addEventListener('resize', setTop);
+  render(); setTop();
+}
+function menuShareData(){
+  var fins = S.plan.filter(function(p){ return p.k === 'F'; }).map(function(p){ return byF[p.id]; });
+  return {
+    fecha: todayEs(), secs: SECS.slice(),
+    alg: ALG.map(function(a){ return {k: a.k, n: a.n, h: a.h}; }),
+    filt: {avoid: menuAvoidKeys(), diet: menuF.diet || ''},
+    fins: fins.map(function(f){
+      var I = menuInfo(f), sv = nrm(servOf(f, 'Salsas en sal'));
+      return {id: f.id, n: f.n, sec: f.sec, pz: f.pz || 0, type: I.type, al: I.al, ev: I.ev, pic: I.pic, raw: I.raw, hot: I.hot, veg: I.veg, vgn: I.vgn, mod: I.mod,
+        roles: menuRoles(f), how: /aparte/.test(sv) ? 'aparte' : /dentro/.test(sv) ? 'dentro' : /sobre/.test(sv) ? 'sobre' : ''};
+    })
+  };
+}
+function buildMenuHTML(){
+  var D = menuShareData(), css = [].map.call(document.querySelectorAll('style'), function(s){ return s.textContent; }).join('\n');
+  var fonts = [].map.call(document.querySelectorAll('link[rel="stylesheet"], link[rel="preconnect"]'), function(l){ return l.outerHTML; }).join('\n');
+  var json = JSON.stringify(D).replace(/</g, '\\u003c').split(String.fromCharCode(8232)).join('\\u2028').split(String.fromCharCode(8233)).join('\\u2029');
+  return '<!doctype html>\n<html lang="es">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>Menú</title>\n' + fonts + '\n<style>\n' + css + '\n</style>\n</head>\n<body>\n' +
+    '<div class="wrap"><header class="top"><div class="brand"><h1>Menú</h1><p>' + esc(D.fecha) + '</p></div></header>\n<main>\n' +
+    '<section id="view-menu">\n<div class="bar"><span class="sum grow" id="menuSum"></span><button class="btn ghost" id="mToggleAll" type="button">Ver el detalle de todos</button></div>\n' +
+    '<div class="mfilter" id="mFilter"><div class="mf-scroll" role="group" aria-label="Filtrar por comensal"><span class="mf-t">Sin</span><span class="mf-in" id="mfAvoid"></span><span class="mf-t">Solo</span><span class="mf-in" id="mfDiet"></span></div>' +
+    '<div class="mverdict" id="mVerdict" role="status" aria-live="polite" hidden></div></div>\n<div id="menuBody"></div>\n' +
+    '<p class="mnote" id="mNote">Alérgenos y etiquetas se deducen de las recetas del libro: sirven para responder rápido, pero no incluyen trazas ni contaminación cruzada. Ante una alergia severa, confirmá con el jefe de cocina.</p>\n</section>\n</main></div>\n' +
+    '<script>\n(' + menuShareRuntime.toString() + ')(' + json + ');\n<\/script>\n</body>\n</html>\n';
+}
 /* ---------- compras */
 /* ---------- cantidades prácticas para el que compra
    g = gramos netos por unidad; ml = ml de jugo por unidad. Lo que no está acá se muestra en g / ml / u. como siempre. */
@@ -2535,6 +2675,18 @@ $('#waShop').addEventListener('click', function(){
 });
 $('#pdfProd').addEventListener('click', function(){ savePDF(buildProdPDF, 'camino-de-produccion-' + todayIso() + '.pdf'); });
 $('#pdfMenu').addEventListener('click', function(){ savePDF(buildMenuPDF, 'menu-celular-' + todayIso() + '.pdf'); });
+$('#htmlMenu').addEventListener('click', async function(){
+  var d = await dlCap();
+  if (!d) { toast('La descarga no está disponible en esta vista.'); return; }
+  var name = 'menu-' + todayIso() + '.html';
+  try {
+    await d.save({filename: name, data: new TextEncoder().encode(buildMenuHTML()).buffer});
+    toast('Menú guardado: ' + name);
+  } catch (err) {
+    if (err && err.code === 'declined') return;
+    toast('No se pudo guardar el menú' + (err && err.code ? ' (' + err.code + ')' : '') + '.');
+  }
+});
 $('#pdfRec').addEventListener('click', function(){ savePDF(buildRecipesPDF, 'recetas-de-produccion-' + todayIso() + '.pdf'); });
 
 /* ---------- archivo del plan: exportar / importar */
@@ -2543,7 +2695,7 @@ function planFileText(){
   Object.keys(S.stock).forEach(function(id){ if (byId[id] && S.stock[id] > 0) stock[byId[id].n] = S.stock[id]; });
   Object.keys(S.uw).forEach(function(n){ if (S.uw[n] > 0) uw[n] = S.uw[n]; });
   return JSON.stringify({
-    app: 'everlinks-rolls', version: 2, exportado: new Date().toISOString(), modo: S.mode, personas: S.cooks,
+    app: 'produccion-rolls', version: 2, exportado: new Date().toISOString(), modo: S.mode, personas: S.cooks,
     plan: S.plan.map(function(p){ var o = obj(p); return {tipo: p.k === 'F' ? 'final' : 'intermedio', nombre: o.n, id: p.id, cantidad: p.q}; }),
     ya_lo_tengo: Object.keys(S.have).filter(function(id){ return byId[id]; }).map(function(id){ return byId[id].n; }),
     stock_parcial: stock, peso_por_unidad_g: uw
@@ -2571,7 +2723,7 @@ R.forEach(function(r){ byNameI[norm(r.n)] = r.id; });
 function importPlan(text){
   var o;
   try { o = JSON.parse(text); } catch (e) { o = null; }
-  if (!o || o.app !== 'everlinks-rolls' || !Array.isArray(o.plan)) { toast('El archivo no es un plan de este libro.'); return; }
+  if (!o || !/-rolls$/.test(String(o && o.app)) || !Array.isArray(o.plan)) { toast('El archivo no es un plan de este libro.'); return; }
   var plan = [], skipped = 0, seen = {};
   o.plan.forEach(function(e){
     if (!e || typeof e !== 'object') { skipped++; return; }
@@ -2610,7 +2762,8 @@ $('#fileImp').addEventListener('change', function(){
 });
 
 /* ---------- guardar en GitHub (opcional: sin configurar, la app guarda solo en este dispositivo) */
-var GH_CFG_KEY = 'everlinks.gh.cfg.v1', GH_DOC_KEY = 'everlinks.gh.doc.v1', GH_BK_KEY = 'everlinks.gh.bk.v1';
+var GH_CFG_KEY = 'rolls.gh.cfg.v1', GH_DOC_KEY = 'rolls.gh.doc.v1', GH_BK_KEY = 'rolls.gh.bk.v1';
+lsMigrate(GH_CFG_KEY, '.gh.cfg.v1'); lsMigrate(GH_DOC_KEY, '.gh.doc.v1'); lsMigrate(GH_BK_KEY, '.gh.bk.v1');
 var GH = {
   cfg: {owner: '', repo: '', branch: 'main', folder: 'proyectos', token: '', autoMin: 3},
   doc: {name: '', sha: '', sig: ''},
@@ -2684,7 +2837,7 @@ function ghDirty(){
 }
 function ghApply(text){
   var o; try { o = JSON.parse(text); } catch (e) { o = null; }
-  if (!o || o.app !== 'everlinks-rolls' || !Array.isArray(o.plan)) return false;
+  if (!o || !/-rolls$/.test(String(o && o.app)) || !Array.isArray(o.plan)) return false;
   if (!o.plan.length) { S.plan = []; S.have = {}; S.stock = {}; S.uw = {}; S.checks = {}; S.done = {}; S.example = false; save(); renderPlan(false); }
   else {
     var before = S.plan; importPlan(text);
@@ -3036,7 +3189,7 @@ window.__gh = {GH: GH, save: ghSave, tick: ghTick, backup: ghBackup, state: ghSt
 
 /* ---------- arranque */
 renderPlan(false);
-window.__app = {shopMessage: shopMessage, shopGroups: shopGroups, buildMenuPDF: buildMenuPDF, buildRecipesPDF: buildRecipesPDF, menuDump: function(){ return FIN.map(function(f){ var I = menuInfo(f); return {id: f.id, pg: f.pg, sec: f.sec, n: f.n, type: I.type, al: Object.keys(I.al), ev: I.ev, pic: I.pic, raw: I.raw, hot: I.hot, veg: I.veg, vgn: I.vgn, mod: I.mod, sauce: sauceIdx(f).map(function(i){ return f.i[i].n; }), temp: servOf(f, 'Temperatura'), desc: f.desc}; }); }, importPlan: importPlan, planFileText: planFileText, buildProdPDF: buildProdPDF, S: function(){ return S; }, compute: compute, groupsOf: groupsOf, buildRecipesPDF: buildRecipesPDF,
+window.__app = {buildMenuHTML: buildMenuHTML, shopMessage: shopMessage, shopGroups: shopGroups, buildMenuPDF: buildMenuPDF, buildRecipesPDF: buildRecipesPDF, menuDump: function(){ return FIN.map(function(f){ var I = menuInfo(f); return {id: f.id, pg: f.pg, sec: f.sec, n: f.n, type: I.type, al: Object.keys(I.al), ev: I.ev, pic: I.pic, raw: I.raw, hot: I.hot, veg: I.veg, vgn: I.vgn, mod: I.mod, sauce: sauceIdx(f).map(function(i){ return f.i[i].n; }), temp: servOf(f, 'Temperatura'), desc: f.desc}; }); }, importPlan: importPlan, planFileText: planFileText, buildProdPDF: buildProdPDF, S: function(){ return S; }, compute: compute, groupsOf: groupsOf, buildRecipesPDF: buildRecipesPDF,
   setTab: setTab, setSub: setSub, byId: byId, byF: byF, FIN: FIN, ORDER: ORDER, levels: levels, schedule: schedule, waitOf: waitOf};
 })();
 
