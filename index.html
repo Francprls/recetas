@@ -711,6 +711,44 @@ body{letter-spacing:0}
 .wa-ico.enviando .flecha{animation:wa-subir .6s ease}
 @keyframes wa-subir{0%{transform:translateY(0);opacity:1}50%{transform:translateY(-14px);opacity:0}51%{transform:translateY(10px);opacity:0}100%{transform:translateY(0);opacity:1}}
 @media (prefers-reduced-motion:reduce){.wa-ico.enviando .flecha{animation:none}}
+
+/* ---- Guardar en GitHub */
+.ghbar{grid-column:1 / -1; grid-row:2; display:flex; align-items:center; gap:8px; padding:0 0 4px; min-width:0}
+@media (min-width:760px){ .ghbar{align-self:center; margin-bottom:4px; padding:0} }
+.ghp{display:inline-flex; align-items:center; gap:6px; height:28px; padding:0 10px; border:0; border-radius:14px; background:var(--raise); color:var(--muted); font:500 .75rem var(--sans); cursor:pointer; white-space:nowrap; min-width:0}
+.ghp i{width:8px; height:8px; border-radius:50%; background:var(--line-strong); flex:none}
+.ghp-ok i{background:var(--accent)} .ghp-ok{color:var(--ink)}
+.ghp-dirty i{background:var(--warn)} .ghp-dirty{color:var(--warn)}
+.ghp-err i{background:var(--danger)} .ghp-err{color:var(--danger)}
+.ghp-busy i{background:var(--accent); animation:ghpulse 1s infinite}
+.ghp-ready i{background:var(--accent)}
+@keyframes ghpulse{50%{opacity:.25}}
+.ghsave{height:28px; min-height:0; padding:0 12px; font-size:.75rem; border-radius:14px}
+.ghsave[hidden]{display:none}
+.ghd-back{position:fixed; inset:0; z-index:90; background:rgba(0,0,0,.6); display:flex; align-items:flex-end; justify-content:center}
+.ghd{background:var(--surface); color:var(--ink); width:min(520px,100%); max-height:88vh; overflow:auto; border-radius:22px 22px 0 0; padding:18px 16px calc(16px + env(safe-area-inset-bottom,0px)); display:flex; flex-direction:column; gap:10px}
+@media (min-width:760px){ .ghd-back{align-items:center} .ghd{border-radius:18px; padding-bottom:16px} }
+.ghd h2{margin:0; font:600 1.0625rem var(--sans)}
+.ghd p{margin:0; font-size:.9375rem; line-height:1.45}
+.ghd .ghn{font-size:.8125rem; color:var(--muted)}
+.ghd .ghl{margin:0; padding-left:18px; font-size:.875rem; line-height:1.45; display:grid; gap:6px}
+.ghf{display:grid; gap:4px; font-size:.8125rem; color:var(--muted)}
+.ghf input{font:400 16px var(--sans); color:var(--ink); background:var(--bg); border:1px solid var(--line-strong); border-radius:10px; padding:10px 12px; min-height:44px; width:100%}
+.ghres{font-size:.8125rem; line-height:1.4; min-height:0}
+.ghres.ok{color:var(--accent)} .ghres.bad{color:var(--danger)}
+.ghd-f{display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; margin-top:4px}
+.ghd-f .btn{min-height:44px; border-radius:12px; padding:0 14px}
+.btn.danger{background:var(--danger); color:#fff}
+.ghgrid{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+.ghgrid .btn{min-height:44px; border-radius:12px; padding:0 10px}
+.ghst{display:flex; align-items:center; gap:8px; font-size:.9375rem}
+.ghst i{width:10px; height:10px; border-radius:50%; background:var(--line-strong)}
+.ghst.ghp-ok i{background:var(--accent)} .ghst.ghp-dirty i{background:var(--warn)} .ghst.ghp-err i{background:var(--danger)} .ghst.ghp-ready i{background:var(--accent)}
+.ghlist{list-style:none; margin:0; padding:0; display:grid; gap:6px}
+.ghlist .btn{width:100%; justify-content:flex-start; min-height:44px; text-align:left}
+.gh-h{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 10px; background:var(--bg); border-radius:12px}
+.gh-h div{display:grid; min-width:0} .gh-h small{color:var(--muted); font-size:.75rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.gh-h span{display:flex; gap:6px; flex:none}
 </style>
 </head>
 <body>
@@ -718,6 +756,7 @@ body{letter-spacing:0}
 <div class="wrap">
   <header class="top">
     <div class="brand"><h1>Producción de rolls</h1></div>
+    <div class="ghbar"><button type="button" class="ghp ghp-off" id="ghPill" aria-haspopup="dialog" aria-label="Estado de GitHub"><i aria-hidden="true"></i><span>Sin conexión</span></button><button type="button" class="btn mini ghsave" id="ghSave" hidden>Guardar</button></div>
     <nav class="tabs" role="tablist" aria-label="Secciones">
       <button class="tab" role="tab" id="tab-plan" data-tab="plan" aria-selected="true" aria-controls="view-plan"><svg class="ti" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14M5 12h14M5 17h9"/></svg><span>Plan</span></button>
       <button class="tab" role="tab" id="tab-prod" data-tab="prod" aria-selected="false" aria-controls="view-prod"><svg class="ti" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h16M6 11v6a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-6M9 7l1-3h4l1 3"/></svg><span>Producción</span></button>
@@ -729,6 +768,7 @@ body{letter-spacing:0}
       <div class="menu-pop r" role="menu" hidden>
         <button type="button" class="menu-item" id="btnExp" role="menuitem">Exportar plan<small>Guarda el plan en un archivo</small></button>
         <button type="button" class="menu-item" id="btnImp" role="menuitem">Importar plan<small>Carga un plan guardado</small></button>
+        <button type="button" class="menu-item" id="btnGh" role="menuitem">Guardar en GitHub<small>Guardar, abrir, historial y respaldos</small></button>
         <button type="button" class="menu-item" id="btnMode" role="menuitem">Cargar por piezas</button>
         <button type="button" class="menu-item danger" id="btnClear" data-keep role="menuitem">Vaciar plan</button>
       </div></div>
@@ -2575,6 +2615,431 @@ $('#fileImp').addEventListener('change', function(){
   rd.onerror = function(){ toast('No se pudo leer el archivo.'); };
   rd.readAsText(f);
 });
+
+/* ---------- guardar en GitHub (opcional: sin configurar, la app guarda solo en este dispositivo) */
+var GH_CFG_KEY = 'everlinks.gh.cfg.v1', GH_DOC_KEY = 'everlinks.gh.doc.v1', GH_BK_KEY = 'everlinks.gh.bk.v1';
+var GH = {
+  cfg: {owner: '', repo: '', branch: 'main', folder: 'proyectos', token: '', autoMin: 3},
+  doc: {name: '', sha: '', sig: ''},
+  ok: null, err: '', conflict: null, paused: false, busy: false, gone: false, timer: null
+};
+function ghLoad(){
+  try { var c = JSON.parse(localStorage.getItem(GH_CFG_KEY) || 'null'); if (c && typeof c === 'object') for (var k in c) if (k in GH.cfg) GH.cfg[k] = c[k]; } catch (e) {}
+  try { var d = JSON.parse(localStorage.getItem(GH_DOC_KEY) || 'null'); if (d && typeof d === 'object') { GH.doc.name = String(d.name || ''); GH.doc.sha = String(d.sha || ''); GH.doc.sig = String(d.sig || ''); } } catch (e) {}
+  try {
+    var m = /[#&]cfg=([^&]+)/.exec(location.hash || '');
+    if (m) {
+      var b = m[1].replace(/-/g, '+').replace(/_/g, '/'), c2 = JSON.parse(ghUnb64(b));
+      ['owner', 'repo', 'branch', 'folder', 'token'].forEach(function(k){ if (typeof c2[k] === 'string' && c2[k]) GH.cfg[k] = c2[k]; });
+      if (typeof c2.autoMin === 'number') GH.cfg.autoMin = c2.autoMin;
+      ghStoreCfg();
+      try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+    }
+  } catch (e) {}
+}
+function ghStoreCfg(){ try { localStorage.setItem(GH_CFG_KEY, JSON.stringify(GH.cfg)); } catch (e) {} }
+function ghStoreDoc(){ try { localStorage.setItem(GH_DOC_KEY, JSON.stringify(GH.doc)); } catch (e) {} }
+function ghB64(str){
+  var b = new TextEncoder().encode(str), s = '';
+  for (var i = 0; i < b.length; i += 8192) s += String.fromCharCode.apply(null, b.subarray(i, i + 8192));
+  return btoa(s);
+}
+function ghUnb64(b64){
+  var bin = atob(String(b64).replace(/\s/g, '')), a = new Uint8Array(bin.length);
+  for (var i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(a);
+}
+function ghEnc(p){ return String(p).split('/').map(encodeURIComponent).join('/'); }
+function ghComplete(){ var c = GH.cfg; return !!(c.owner && c.repo && c.token && c.branch); }
+function ghReady(){ return ghComplete() && GH.ok !== false; }
+function ghRp(sub){ return '/repos/' + encodeURIComponent(GH.cfg.owner) + '/' + encodeURIComponent(GH.cfg.repo) + sub; }
+function ghFolder(){ return String(GH.cfg.folder || '').replace(/^\/+|\/+$/g, ''); }
+function ghFilePath(name){ var f = ghFolder(); return (f ? f + '/' : '') + name + '.json'; }
+function ghSafeName(n){ return String(n || '').replace(/\.json$/i, '').replace(/[\\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').trim().slice(0, 80); }
+
+async function ghApi(method, path, body){
+  var c = GH.cfg, res;
+  var headers = {'Authorization': 'Bearer ' + c.token, 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28'};
+  if (body) headers['Content-Type'] = 'application/json';
+  try { res = await fetch('https://api.github.com' + path, {method: method, headers: headers, body: body ? JSON.stringify(body) : undefined}); }
+  catch (e) { var ne = new Error('No hay conexión con GitHub. Revisá internet e intentá de nuevo.'); ne.net = true; throw ne; }
+  var data = null; try { data = await res.json(); } catch (e) {}
+  if (!res.ok) { var er = new Error((data && data.message) || ('Error ' + res.status)); er.status = res.status; er.data = data; throw er; }
+  return data;
+}
+function ghMsg(e){
+  if (!e) return 'Error desconocido.';
+  if (e.net) return e.message;
+  if (e.status === 401) return 'GitHub no aceptó el token (vencido, revocado o mal copiado).';
+  if (e.status === 403) return 'GitHub rechazó la operación: el token no tiene permiso de escritura en este repositorio o se superó el límite de pedidos. (' + (e.message || '') + ')';
+  if (e.status === 404) return 'GitHub respondió 404. Si el repositorio es privado, casi siempre significa que el token no tiene acceso a ese repositorio (o le falta el permiso Contents), no que el repositorio no exista. Revisá también usuario, repositorio y rama.';
+  return e.message || 'Error desconocido.';
+}
+function ghAuthFail(e){ if (e && (e.status === 401 || e.status === 403)) GH.ok = false; }
+
+/* ---- documento: el plan + el estado de las listas */
+function ghDoc(){
+  var o = JSON.parse(planFileText());
+  o.estado = {compras_tildadas: S.checks, produccion_hecha: S.done, mise: S.mise, inicio: S.start};
+  return o;
+}
+function ghSigOf(o){ var c = JSON.parse(JSON.stringify(o)); delete c.exportado; return JSON.stringify(c); }
+function ghEmpty(){ return !S.plan.length; }
+function ghDirty(){
+  if (!GH.doc.name) return !ghEmpty();
+  return ghSigOf(ghDoc()) !== GH.doc.sig;
+}
+function ghApply(text){
+  var o; try { o = JSON.parse(text); } catch (e) { o = null; }
+  if (!o || o.app !== 'everlinks-rolls' || !Array.isArray(o.plan)) return false;
+  if (!o.plan.length) { S.plan = []; S.have = {}; S.stock = {}; S.uw = {}; S.checks = {}; S.done = {}; S.example = false; save(); renderPlan(false); }
+  else {
+    var before = S.plan; importPlan(text);
+    if (S.plan === before) return false;
+  }
+  var e = o.estado || {};
+  if (e.compras_tildadas && typeof e.compras_tildadas === 'object') S.checks = e.compras_tildadas;
+  if (e.produccion_hecha && typeof e.produccion_hecha === 'object') S.done = e.produccion_hecha;
+  if (e.mise && typeof e.mise === 'object') S.mise = e.mise;
+  if (typeof e.inicio === 'string' && /^\d{2}:\d{2}$/.test(e.inicio)) S.start = e.inicio;
+  save(); renderPlan(false);
+  return true;
+}
+
+/* ---- estado visible */
+function ghState(){
+  if (!ghComplete()) return ['off', 'Sin conexión'];
+  if (GH.ok === false) return ['err', 'Error de conexión'];
+  if (GH.busy) return ['busy', 'Guardando…'];
+  if (GH.conflict) return ['err', 'Conflicto'];
+  if (GH.gone) return ['err', 'Borrado en GitHub'];
+  if (GH.err) return ['err', 'Error al guardar'];
+  if (ghDirty()) return ['dirty', 'Sin guardar'];
+  return GH.doc.name ? ['ok', 'Guardado'] : ['ready', 'Conectado'];
+}
+function ghRender(){
+  var p = $('#ghPill'), b = $('#ghSave'); if (!p) return;
+  var s = ghState();
+  p.className = 'ghp ghp-' + s[0]; p.querySelector('span').textContent = s[1];
+  p.title = GH.err || (GH.doc.name ? 'Documento: ' + GH.doc.name : 'Guardar en GitHub');
+  b.hidden = !ghComplete(); b.disabled = GH.busy;
+  b.classList.toggle('primary', s[0] === 'dirty');
+}
+var ghChk = 0;
+var ghSave0 = save;
+save = function(){ ghSave0(); clearTimeout(ghChk); ghChk = setTimeout(ghRender, 60); };
+
+/* ---- diálogo genérico */
+function ghModal(o){
+  return new Promise(function(resolve){
+    var back = document.createElement('div'); back.className = 'ghd-back';
+    var el = document.createElement('div'); el.className = 'ghd'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', o.title);
+    el.innerHTML = '<h2>' + esc(o.title) + '</h2><div class="ghd-b">' + (o.html || '') + '</div><div class="ghd-f"></div>';
+    var foot = el.querySelector('.ghd-f'), done = false, running = false;
+    function close(id){ if (done) return; done = true; document.removeEventListener('keydown', onKey, true); back.remove(); if (prev && prev.focus) { try { prev.focus(); } catch (e) {} } resolve(id); }
+    var prev = document.activeElement;
+    async function act(a){
+      if (running) return; running = true;
+      try {
+        if (a.run) { var r = await a.run(el, close); if (r === false) return; }
+        close(a.id);
+      } finally { running = false; }
+    }
+    (o.actions || []).forEach(function(a){
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'btn' + (a.cls ? ' ' + a.cls : ''); b.textContent = a.t; b.dataset.id = a.id;
+      b.addEventListener('click', function(){ act(a); }); foot.appendChild(b);
+    });
+    function onKey(e){
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(null); }
+      else if (e.key === 'Enter' && e.target && e.target.tagName === 'INPUT' && o.enter) {
+        e.preventDefault(); e.stopPropagation();
+        var a = (o.actions || []).filter(function(x){ return x.id === o.enter; })[0]; if (a) act(a);
+      }
+    }
+    document.addEventListener('keydown', onKey, true);
+    back.addEventListener('click', function(e){ if (e.target === back && !o.modal) close(null); });
+    back.appendChild(el); document.body.appendChild(back);
+    if (o.mount) o.mount(el, close);
+    var f = el.querySelector('input,select,button.primary,button'); if (f) f.focus();
+  });
+}
+function ghConfirm(title, msg, okText, danger){
+  return ghModal({title: title, html: '<p>' + esc(msg) + '</p>', modal: true,
+    actions: [{id: 'no', t: 'Cancelar'}, {id: 'si', t: okText || 'Aceptar', cls: danger ? 'danger' : 'primary'}]}).then(function(r){ return r === 'si'; });
+}
+function ghInfo(title, msg){ return ghModal({title: title, html: '<p>' + esc(msg) + '</p>', actions: [{id: 'ok', t: 'Entendido', cls: 'primary'}]}); }
+
+/* ---- configuración */
+async function ghConfigDialog(){
+  var c = GH.cfg;
+  function field(id, lb, val, ph, type){ return '<label class="ghf"><span>' + lb + '</span><input id="' + id + '" type="' + (type || 'text') + '" value="' + esc(val) + '" placeholder="' + esc(ph || '') + '" autocomplete="off" autocapitalize="off" spellcheck="false"></label>'; }
+  var html = '<p class="ghn">Los datos se guardan solo en este navegador. El token no queda en el archivo de la app.</p>' +
+    field('ghOwner', 'Usuario u organización', c.owner, 'mi-usuario') + field('ghRepo', 'Repositorio', c.repo, 'produccion-rolls') +
+    field('ghBranch', 'Rama', c.branch, 'main') + field('ghFolder', 'Carpeta', c.folder, 'proyectos') +
+    field('ghToken', 'Token', c.token, 'github_pat_…', 'password') +
+    '<label class="ghf"><span>Autoguardado (minutos, 0 = apagado)</span><input id="ghAuto" type="number" min="0" step="any" inputmode="decimal" value="' + esc(c.autoMin) + '"></label>' +
+    '<div class="ghres" id="ghRes" role="status" aria-live="polite"></div>';
+  function read(el){
+    return {owner: el.querySelector('#ghOwner').value.trim(), repo: el.querySelector('#ghRepo').value.trim(), branch: el.querySelector('#ghBranch').value.trim() || 'main',
+      folder: el.querySelector('#ghFolder').value.trim() || 'proyectos', token: el.querySelector('#ghToken').value.trim(),
+      autoMin: Math.max(0, parseFloat(el.querySelector('#ghAuto').value) || 0)};
+  }
+  return ghModal({title: 'Configurar GitHub', html: html, enter: 'save', modal: true, actions: [
+    {id: 'test', t: 'Probar conexión', run: async function(el){
+      var res = el.querySelector('#ghRes'), keep = JSON.parse(JSON.stringify(GH.cfg));
+      var n = read(el); GH.cfg = Object.assign({}, GH.cfg, n); res.className = 'ghres'; res.textContent = 'Probando…';
+      try { res.textContent = await ghTest(); res.className = 'ghres ok'; }
+      catch (e) { res.textContent = ghMsg(e); res.className = 'ghres bad'; }
+      finally { GH.cfg = keep; }
+      return false;
+    }},
+    {id: 'cancel', t: 'Cancelar'},
+    {id: 'save', t: 'Guardar configuración', cls: 'primary', run: async function(el){
+      var n = read(el);
+      if (!n.owner || !n.repo || !n.token) { el.querySelector('#ghRes').textContent = 'Completá usuario, repositorio y token.'; el.querySelector('#ghRes').className = 'ghres bad'; return false; }
+      GH.cfg = Object.assign({}, GH.cfg, n); ghStoreCfg(); GH.ok = null; GH.err = ''; GH.conflict = null; GH.paused = false; GH.gone = false;
+      ghTimerSet(); ghRender(); toast('Configuración de GitHub guardada.');
+    }}
+  ]});
+}
+async function ghTest(){
+  var r = await ghApi('GET', ghRp(''));
+  if (!r.permissions || !r.permissions.push) { var e = new Error('El repositorio existe, pero este token no puede escribir en él. Necesita el permiso Contents: Read and write.'); e.fileLevel = true; throw e; }
+  try { await ghApi('GET', ghRp('/branches/' + ghEnc(GH.cfg.branch))); }
+  catch (e2) { if (e2.status === 404) { var e3 = new Error('El repositorio es accesible, pero la rama "' + GH.cfg.branch + '" no existe.'); e3.fileLevel = true; throw e3; } throw e2; }
+  return 'Conexión correcta: el token puede escribir en ' + r.full_name + ' (rama ' + GH.cfg.branch + ').';
+}
+
+/* ---- archivos */
+async function ghGetFile(path, ref){
+  var r = await ghApi('GET', ghRp('/contents/' + ghEnc(path) + '?ref=' + encodeURIComponent(ref || GH.cfg.branch)));
+  var text;
+  if (r.content) text = ghUnb64(r.content);
+  else if (r.download_url) { var rs = await fetch(r.download_url); if (!rs.ok) throw new Error('No se pudo descargar el archivo grande (' + rs.status + ').'); text = await rs.text(); }
+  else text = '';
+  return {sha: r.sha, text: text};
+}
+async function ghList(){
+  try {
+    var r = await ghApi('GET', ghRp('/contents/' + ghEnc(ghFolder()) + '?ref=' + encodeURIComponent(GH.cfg.branch)));
+    return (Array.isArray(r) ? r : []).filter(function(x){ return x.type === 'file' && /\.json$/i.test(x.name); });
+  } catch (e) { if (e.status === 404) return []; throw e; }
+}
+function ghStamp(){ var d = new Date(), p = function(n){ return ('0' + n).slice(-2); }; return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + '_' + p(d.getHours()) + p(d.getMinutes()); }
+
+/* ---- respaldos: una copia de todos los documentos en respaldos/AAAA-MM-DD_HHMM/ (Git Data API) */
+async function ghBackup(why){
+  var c = GH.cfg, files = await ghList();
+  if (!files.length) return null;
+  var ref = await ghApi('GET', ghRp('/git/ref/heads/' + ghEnc(c.branch)));
+  var head = ref.object.sha, cm = await ghApi('GET', ghRp('/git/commits/' + head)), base = cm.tree.sha, stamp = ghStamp();
+  var entries = files.map(function(f){ return {path: 'respaldos/' + stamp + '/' + f.name, mode: '100644', type: 'blob', sha: f.sha}; });
+  var tr = await ghApi('GET', ghRp('/git/trees/' + base + '?recursive=1')), dirs = {};
+  (tr.tree || []).forEach(function(t){ var m = /^respaldos\/(\d{4}-\d{2}-\d{2}_\d{4})\//.exec(t.path); if (m && t.type === 'blob') (dirs[m[1]] = dirs[m[1]] || []).push(t.path); });
+  var names = Object.keys(dirs).filter(function(n){ return n !== stamp; }).sort(), over = names.length + 1 - 40;
+  if (over > 0) names.slice(0, over).forEach(function(n){ dirs[n].forEach(function(p){ entries.push({path: p, mode: '100644', type: 'blob', sha: null}); }); });
+  var nt = await ghApi('POST', ghRp('/git/trees'), {base_tree: base, tree: entries});
+  var nc = await ghApi('POST', ghRp('/git/commits'), {message: 'Respaldo ' + stamp + ' (' + why + ')', tree: nt.sha, parents: [head]});
+  await ghApi('PATCH', ghRp('/git/refs/heads/' + ghEnc(c.branch)), {sha: nc.sha});
+  return stamp;
+}
+async function ghDailyBackup(){
+  var today = todayIso(), last = ''; try { last = localStorage.getItem(GH_BK_KEY) || ''; } catch (e) {}
+  if (last === today) return;
+  try { var s = await ghBackup('primer guardado del día'); if (s) { try { localStorage.setItem(GH_BK_KEY, today); } catch (e) {} toast('Respaldo creado: ' + s); } }
+  catch (e) { toast('No se pudo hacer el respaldo del día: ' + ghMsg(e)); }
+}
+
+/* ---- guardar */
+async function ghSave(manual, opts){
+  opts = opts || {};
+  if (GH.busy) return false;
+  if (!ghComplete()) { if (manual) await ghConfigDialog(); return false; }
+  if (!GH.doc.name) {
+    if (!manual) return false;
+    var nm = await ghNameDialog('Guardar en GitHub', 'plan-' + todayIso()); if (!nm) return false;
+    GH.doc = {name: nm, sha: '', sig: ''};
+  }
+  GH.busy = true; GH.err = ''; ghRender();
+  var doc = ghDoc(), sig = ghSigOf(doc), file = ghFilePath(GH.doc.name), first = !GH.doc.sha;
+  try {
+    await ghDailyBackup();
+    var n = S.plan.length;
+    var body = {message: opts.message || ((first ? 'Crea' : 'Actualiza') + ' plan "' + GH.doc.name + '": ' + n + (n === 1 ? ' producto' : ' productos')),
+      content: ghB64(JSON.stringify(doc, null, 2)), branch: GH.cfg.branch};
+    if (GH.doc.sha) body.sha = GH.doc.sha;
+    var r = await ghApi('PUT', ghRp('/contents/' + ghEnc(file)), body);
+    GH.doc.sha = r.content.sha; GH.doc.sig = sig; GH.ok = true; GH.paused = false; GH.conflict = null; GH.gone = false; ghStoreDoc();
+    if (manual) toast('Guardado en GitHub: ' + GH.doc.name);
+    return true;
+  } catch (e) {
+    if (e.status === 409 || e.status === 422 || (e.status === 404 && GH.doc.sha)) { GH.busy = false; return await ghConflict(manual, e); }
+    ghAuthFail(e);
+    GH.err = ghMsg(e); if (!manual) GH.paused = true;
+    toast(manual ? 'No se pudo guardar en GitHub. ' + GH.err : 'El autoguardado se pausó: ' + GH.err);
+    return false;
+  } finally { GH.busy = false; ghRender(); }
+}
+async function ghNameDialog(title, def){
+  var out = null;
+  var r = await ghModal({title: title, enter: 'ok', modal: true,
+    html: '<label class="ghf"><span>Nombre del documento</span><input id="ghName" type="text" value="' + esc(def || '') + '" autocomplete="off" spellcheck="false"></label><p class="ghn">Se guarda como un archivo .json en la carpeta “' + esc(ghFolder()) + '”.</p><div class="ghres" id="ghRes"></div>',
+    actions: [{id: 'no', t: 'Cancelar'}, {id: 'ok', t: 'Guardar', cls: 'primary', run: async function(el){
+      var n = ghSafeName(el.querySelector('#ghName').value);
+      if (!n) { el.querySelector('#ghRes').textContent = 'Poné un nombre.'; el.querySelector('#ghRes').className = 'ghres bad'; return false; }
+      out = n;
+    }}], mount: function(el){ el.querySelector('#ghName').select(); }});
+  return r === 'ok' ? out : null;
+}
+/* el archivo cambió (o ya existía) en GitHub desde la última vez que se abrió */
+async function ghConflict(manual, err){
+  var file = ghFilePath(GH.doc.name), remote = null;
+  try { remote = await ghGetFile(file); }
+  catch (e) {
+    if (e.status === 404) remote = null; else { ghAuthFail(e); GH.err = ghMsg(e); if (!manual) GH.paused = true; toast(GH.err); ghRender(); return false; }
+  }
+  if (!remote) {
+    GH.gone = true; ghRender();
+    if (!manual) { toast('El archivo se borró en GitHub. El autoguardado no lo vuelve a crear.'); return false; }
+    var re = await ghConfirm('El archivo ya no está en GitHub', 'Alguien lo borró desde que lo abriste. ¿Querés volver a crearlo con lo que hay en pantalla?', 'Volver a crear');
+    if (!re) return false;
+    GH.doc.sha = ''; GH.gone = false; return await ghSave(true);
+  }
+  GH.conflict = {sha: remote.sha, text: remote.text}; ghRender();
+  if (!manual) { toast('El archivo cambió en GitHub: el autoguardado se pausó hasta que lo resuelvas.'); return false; }
+  return await ghResolve();
+}
+async function ghResolve(){
+  var cf = GH.conflict; if (!cf) return false;
+  var r = await ghModal({title: 'El archivo cambió en GitHub', modal: true,
+    html: '<p>“' + esc(GH.doc.name) + '” cambió en GitHub desde la última vez que lo abriste (otra persona u otro dispositivo lo guardó). No lo piso en silencio. ¿Qué querés hacer?</p><ul class="ghl"><li><b>Recargar desde GitHub:</b> traés la versión de GitHub y se pierden los cambios que no guardaste.</li><li><b>Sobrescribir:</b> tu versión reemplaza a la de GitHub (antes se hace un respaldo; la versión anterior queda en el historial).</li></ul>',
+    actions: [{id: 'no', t: 'Decidir después'}, {id: 'over', t: 'Sobrescribir', cls: 'danger'}, {id: 'reload', t: 'Recargar desde GitHub', cls: 'primary'}]});
+  if (r === 'reload') {
+    if (!ghApply(cf.text)) { toast('La versión de GitHub no es un plan válido.'); return false; }
+    GH.doc.sha = cf.sha; GH.doc.sig = ghSigOf(ghDoc()); GH.conflict = null; GH.paused = false; GH.err = ''; ghStoreDoc(); ghRender();
+    toast('Se cargó la versión de GitHub.'); return true;
+  }
+  if (r === 'over') {
+    try { await ghBackup('antes de sobrescribir'); } catch (e) { toast('No se pudo hacer el respaldo previo: ' + ghMsg(e)); }
+    var fresh; try { fresh = await ghGetFile(ghFilePath(GH.doc.name)); } catch (e) { toast(ghMsg(e)); return false; }
+    GH.doc.sha = fresh.sha; GH.conflict = null; GH.paused = false;
+    return await ghSave(true);
+  }
+  return false;
+}
+
+/* ---- abrir / historial / borrar */
+async function ghOpenDialog(){
+  if (ghDirty() && !(await ghConfirm('Hay cambios sin guardar', 'Si abrís otro documento, se reemplaza lo que tenés en pantalla. ¿Seguir?', 'Seguir'))) return;
+  var files;
+  try { files = await ghList(); } catch (e) { ghAuthFail(e); GH.err = ghMsg(e); ghRender(); toast(GH.err); return; }
+  var html = files.length ? '<ul class="ghlist">' + files.map(function(f, i){ return '<li><button type="button" class="btn" data-i="' + i + '">' + esc(f.name.replace(/\.json$/i, '')) + '</button></li>'; }).join('') + '</ul>'
+    : '<p>Todavía no hay documentos guardados en la carpeta “' + esc(ghFolder()) + '”.</p>';
+  var pick = null;
+  await ghModal({title: 'Abrir desde GitHub', html: html, actions: [{id: 'no', t: 'Cerrar'}], mount: function(el, close){
+    el.addEventListener('click', function(e){ var b = e.target.closest('[data-i]'); if (!b) return; pick = files[+b.dataset.i]; close('pick'); });
+  }});
+  if (!pick) return;
+  try {
+    var name = pick.name.replace(/\.json$/i, ''), f = await ghGetFile(ghFolder() ? ghFolder() + '/' + pick.name : pick.name);
+    if (!ghApply(f.text)) { toast('El archivo no es un plan válido de esta app.'); return; }
+    GH.doc = {name: name, sha: f.sha, sig: ghSigOf(ghDoc())}; GH.conflict = null; GH.paused = false; GH.err = ''; GH.gone = false; ghStoreDoc(); ghRender();
+    toast('Abierto: ' + name);
+  } catch (e) { ghAuthFail(e); toast(ghMsg(e)); }
+}
+async function ghHistoryDialog(){
+  if (!GH.doc.name) { await ghInfo('Historial', 'Primero guardá o abrí un documento.'); return; }
+  var file = ghFilePath(GH.doc.name), list;
+  try { list = await ghApi('GET', ghRp('/commits?path=' + encodeURIComponent(file) + '&sha=' + encodeURIComponent(GH.cfg.branch) + '&per_page=30')); }
+  catch (e) { ghAuthFail(e); toast(ghMsg(e)); return; }
+  list = Array.isArray(list) ? list : [];
+  var html = list.length ? '<ul class="ghlist">' + list.map(function(c, i){
+    var d = new Date((c.commit && c.commit.author && c.commit.author.date) || 0), msg = String((c.commit && c.commit.message) || '').split('\n')[0];
+    return '<li class="gh-h"><div><b>' + esc(d.toLocaleString('es-AR')) + '</b><small>' + esc(msg) + '</small></div><span><button type="button" class="btn mini" data-a="open" data-i="' + i + '">Abrir</button><button type="button" class="btn mini" data-a="rest" data-i="' + i + '">Restaurar</button></span></li>';
+  }).join('') + '</ul>' : '<p>No hay versiones anteriores de este documento.</p>';
+  var pick = null;
+  await ghModal({title: 'Historial de “' + GH.doc.name + '”', html: html, actions: [{id: 'no', t: 'Cerrar'}], mount: function(el, close){
+    el.addEventListener('click', function(e){ var b = e.target.closest('[data-i]'); if (!b) return; pick = {c: list[+b.dataset.i], a: b.dataset.a}; close('pick'); });
+  }});
+  if (!pick) return;
+  var sha = pick.c.sha, when = new Date(pick.c.commit.author.date).toLocaleString('es-AR');
+  if (ghDirty() && !(await ghConfirm('Hay cambios sin guardar', 'Se reemplaza lo que tenés en pantalla por la versión del ' + when + '. ¿Seguir?', 'Seguir'))) return;
+  try {
+    var f = await ghGetFile(file, sha);
+    if (!ghApply(f.text)) { toast('Esa versión no es un plan válido.'); return; }
+    ghRender();
+    if (pick.a === 'rest') { var ok = await ghSave(true, {message: 'Restaura la versión del ' + when + ' (' + sha.slice(0, 7) + ') de "' + GH.doc.name + '"'}); if (ok) toast('Versión restaurada y guardada.'); }
+    else toast('Versión del ' + when + ' abierta. Guardá si querés dejarla como actual.');
+  } catch (e) { ghAuthFail(e); toast(ghMsg(e)); }
+}
+async function ghDelete(){
+  if (!GH.doc.name) { await ghInfo('Borrar', 'No hay un documento abierto para borrar.'); return; }
+  if (!(await ghConfirm('Borrar de GitHub', 'Se borra “' + GH.doc.name + '” del repositorio (queda en el historial de Git). Antes se hace un respaldo. ¿Seguir?', 'Borrar', true))) return;
+  var file = ghFilePath(GH.doc.name);
+  try {
+    await ghBackup('antes de borrar');
+    var fresh = await ghGetFile(file);
+    await ghApi('DELETE', ghRp('/contents/' + ghEnc(file)), {message: 'Borra plan "' + GH.doc.name + '"', sha: fresh.sha, branch: GH.cfg.branch});
+    var nm = GH.doc.name; GH.doc = {name: '', sha: '', sig: ''}; GH.conflict = null; GH.gone = false; GH.err = ''; ghStoreDoc(); ghRender();
+    toast('Borrado de GitHub: ' + nm + '. Lo que tenés en pantalla sigue acá.');
+  } catch (e) {
+    if (e.status === 404) { GH.doc = {name: '', sha: '', sig: ''}; ghStoreDoc(); ghRender(); toast('Ese archivo ya no estaba en GitHub.'); return; }
+    ghAuthFail(e); toast('No se borró nada. ' + ghMsg(e));
+  }
+}
+async function ghManualBackup(){
+  try { var s = await ghBackup('manual'); toast(s ? 'Respaldo creado: respaldos/' + s : 'No hay documentos para respaldar todavía.'); }
+  catch (e) { ghAuthFail(e); toast('No se pudo hacer el respaldo. ' + ghMsg(e)); }
+}
+
+/* ---- menú principal de GitHub */
+async function ghHub(){
+  if (!ghComplete()) { await ghConfigDialog(); return; }
+  var s = ghState();
+  var html = '<p class="ghst ghp-' + s[0] + '"><i></i><b>' + esc(s[1]) + '</b></p>' +
+    '<p class="ghn">Documento: <b>' + (GH.doc.name ? esc(GH.doc.name) : 'sin guardar todavía') + '</b><br>' + esc(GH.cfg.owner + '/' + GH.cfg.repo) + ' · rama ' + esc(GH.cfg.branch) + ' · carpeta ' + esc(ghFolder()) + '</p>' +
+    (GH.err ? '<p class="ghres bad">' + esc(GH.err) + '</p>' : '') +
+    '<div class="ghgrid">' +
+    (GH.conflict ? '<button type="button" class="btn danger" data-g="resolve">Resolver conflicto…</button>' : '') +
+    '<button type="button" class="btn primary" data-g="save">Guardar</button><button type="button" class="btn" data-g="saveas">Guardar como…</button>' +
+    '<button type="button" class="btn" data-g="open">Abrir…</button><button type="button" class="btn" data-g="hist">Historial…</button>' +
+    '<button type="button" class="btn" data-g="bk">Respaldo ahora</button><button type="button" class="btn" data-g="del">Borrar de GitHub…</button>' +
+    '<button type="button" class="btn" data-g="cfg">Configuración…</button></div>';
+  var pick = null;
+  await ghModal({title: 'Guardar en GitHub', html: html, actions: [{id: 'no', t: 'Cerrar'}], mount: function(el, close){
+    el.addEventListener('click', function(e){ var b = e.target.closest('[data-g]'); if (!b) return; pick = b.dataset.g; close('pick'); });
+  }});
+  if (pick === 'save') { if (GH.conflict) await ghResolve(); else { GH.gone = false; await ghSave(true); } }
+  else if (pick === 'resolve') await ghResolve();
+  else if (pick === 'saveas') { var nm = await ghNameDialog('Guardar como…', GH.doc.name || 'plan-' + todayIso()); if (nm) { GH.doc = {name: nm, sha: '', sig: ''}; GH.conflict = null; GH.gone = false; await ghSave(true); } }
+  else if (pick === 'open') await ghOpenDialog();
+  else if (pick === 'hist') await ghHistoryDialog();
+  else if (pick === 'bk') await ghManualBackup();
+  else if (pick === 'del') await ghDelete();
+  else if (pick === 'cfg') await ghConfigDialog();
+  ghRender();
+}
+
+/* ---- autoguardado: solo con cambios, conexión lista y sin conflicto; si falla se pausa */
+function ghTimerSet(){
+  clearInterval(GH.timer); GH.timer = null;
+  var m = Number(GH.cfg.autoMin);
+  if (!(m > 0)) return;
+  GH.timer = setInterval(ghTick, Math.max(500, m * 60000));
+}
+async function ghTick(){
+  if (!ghReady() || GH.busy || GH.conflict || GH.paused || GH.gone || GH.err || !GH.doc.name) return;
+  if (!ghDirty()) return;
+  var ok = await ghSave(false);
+  if (ok) toast('Autoguardado en GitHub.');
+}
+
+ghLoad();
+$('#ghPill').addEventListener('click', ghHub);
+$('#ghSave').addEventListener('click', function(){ if (GH.conflict) ghResolve(); else { GH.gone = false; ghSave(true); } });
+$('#btnGh').addEventListener('click', ghHub);
+ghTimerSet(); ghRender();
+window.__gh = {GH: GH, save: ghSave, tick: ghTick, backup: ghBackup, state: ghState, dirty: ghDirty, render: ghRender, timerSet: ghTimerSet};
 
 /* ---------- arranque */
 renderPlan(false);
