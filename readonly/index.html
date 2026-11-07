@@ -1073,8 +1073,38 @@ body{letter-spacing:0}
 .robar b{color:var(--warn);letter-spacing:.04em;text-transform:uppercase;font-size:.75rem}
 /* solo lectura: se ocultan los controles que editan */
 body.ro #ghPill,body.ro #ghSave,body.ro #btnGh,body.ro #btnPick,body.ro #btnMode,body.ro #btnClear,body.ro #btnImp,body.ro #btnMg,body.ro #btnMgC,body.ro #btnUncheck,
-body.ro .step,body.ro .edone,body.ro .mgopen,body.ro .rm:not(.fch){display:none!important}
+body.ro .step,body.ro [data-edone],body.ro [data-mgopen],body.ro .rm:not(.fch){display:none!important}
 body.ro #waShop,body.ro [data-hwa]{display:none!important}
+/* ---- fecha del evento, motivos y registro */
+.evdate{display:flex;flex-wrap:wrap;align-items:center;gap:2px 12px;margin:2px 0 12px;color:var(--muted);font-size:.875rem}
+.evdate .evl{text-transform:uppercase;letter-spacing:.04em;font-size:.75rem}
+.evdate b{color:var(--ink);font-weight:600}
+.evdate small{flex-basis:100%;font-size:.75rem;color:var(--muted)}
+.evdate input[type=date]{min-height:44px;padding:0 12px;border-radius:12px;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);font:inherit}
+.evdate .link{background:none;border:0;color:var(--accent);text-decoration:underline;min-height:44px;padding:0 4px;font:inherit;cursor:pointer}
+.mchips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px}
+.mchip{min-height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);font:inherit;cursor:pointer}
+.mchip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.flog{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.flog li{display:grid;gap:2px;padding:10px 12px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+.flog span{color:var(--ink)} .flog small{color:var(--muted)}
+/* solo lectura: pantalla de enlace vencido, retirado o dado de baja */
+.rooff{min-height:100vh;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:32px 24px;max-width:520px;margin:0 auto;color:var(--ink)}
+.rooff h2{margin:0;font-size:1.5rem}
+.rooff p{margin:0;color:var(--muted);font-size:1rem;line-height:1.5}
+body.ro-off>*:not(.rooff):not(script):not(style){display:none!important}
+/* solo lectura: todo informativo */
+body.ro #groups .lab input[type=checkbox]{display:none}
+body.ro #menuMode{display:none}
+body.ro .pchip{pointer-events:none}
+body.ro input:disabled,body.ro textarea:disabled{opacity:1}
+
+/* quitar del plan + deshacer */
+.toast.act{pointer-events:auto; display:flex; gap:14px; align-items:center}
+.toast .tundo{background:none; border:0; color:inherit; font:inherit; font-weight:700; text-decoration:underline; padding:8px 4px; min-height:44px; cursor:pointer}
+.fact .qdel,.mc .qdel{margin-top:.5rem}
+.btn.danger.qdel{color:var(--bad, #c0392b); border-color:currentColor}
+body.ro .qdel{display:none !important}
 
 /* ================================================================
    CAPA UI/UX PRO MAX — Swiss minimal para herramienta de cocina
@@ -1273,6 +1303,7 @@ input:not([type=checkbox]):not([type=radio]):focus-visible,textarea:focus-visibl
         <button class="btn" id="btnShare" type="button">Compartir</button>
         <button class="btn primary" id="btnPick" type="button" aria-expanded="false" aria-controls="picker">+ Agregar roll</button>
       </div>
+      <div class="evdate" id="evDate" hidden></div>
       <div class="rows" id="planBox" hidden><div id="planRows"></div></div>
       <div class="empty" id="planEmpty" hidden>El plan está vacío. Tocá “Agregar roll” para empezar.</div>
       <div class="plan-foot" id="planFoot" hidden>
@@ -1500,7 +1531,7 @@ try {
    AMPLIACIONES DE LA REUNIÓN DE TRABAJO (evento, enrollado, aprendizaje, cierre)
    Todo lo nuevo vive acá; usa las funciones de la app (compute, factor, menuInfo...)
    ====================================================================== */
-var XKEYS = ['mm', 'lm', 'enr', 'mg', 'hand', 'band', 'cont', 'cierre', 'learn', 'sal', 'ev'];
+var XKEYS = ['mm', 'lm', 'enr', 'mg', 'hand', 'band', 'cont', 'cierre', 'learn', 'sal', 'ev', 'fecha', 'uid', 'pubx'];
 function xdef(){
   return {
     mm: 'carta', lm: 'fichas', ev: 'tras',
@@ -1517,7 +1548,10 @@ function xdef(){
     ], arroz: '', arrozUsado: ''},
     cierre: {t1: '', t2: '', rep: '', agot: '', nota: '', salE: '', salL: '', arE: '', arC: '', rows: {}},
     learn: {miss: {}, known: {}},
-    sal: {}
+    sal: {},
+    fecha: {v: '', log: []},
+    uid: '',
+    pubx: {copia: null}
   };
 }
 function xmerge(d, o){
@@ -2066,7 +2100,7 @@ $('#planRows').addEventListener('click', function(e){
   var b = e.target.closest('button[data-act]'); if (!b) return;
   var row = b.closest('.row'), p = planOf(row.dataset.k, row.dataset.id), act = b.dataset.act;
   if (act === 'more') { var op = !(rxOpen[p.id] === true); rxOpen[p.id] = op; row.classList.toggle('open', op); b.setAttribute('aria-expanded', op ? 'true' : 'false'); row.querySelector('.rx').innerHTML = rxInner(p); return; }
-  if (act === 'del') { S.plan = S.plan.filter(function(x){ return x !== p; }); touch(); renderPlan(false); return; }
+  if (act === 'del') { quitarDelPlan(p.k, p.id); return; }
   var base = p.k === 'F' ? 1 : (byId[p.id].y || 1), cur = dispQ(p) || 0;
   var nv = Math.max(0, Math.round((cur + (act === 'inc' ? base : -base)) * 10000) / 10000);
   p.q = fromDisp(p, nv);
@@ -2081,7 +2115,7 @@ var clearT = null;
 $('#btnClear').addEventListener('click', function(){
   var b = this;
   if (!S.plan.length) return;
-  if (clearT) { clearTimeout(clearT); clearT = null; b.textContent = 'Vaciar plan'; S.plan = []; touch(); renderPlan(true); return; }
+  if (clearT) { clearTimeout(clearT); clearT = null; b.textContent = 'Vaciar plan'; S.plan = []; fechaReset(); touch(); renderPlan(true); return; }
   b.textContent = '¿Vaciar? Tocá de nuevo';
   clearT = setTimeout(function(){ clearT = null; b.textContent = 'Vaciar plan'; }, 3000);
 });
@@ -3421,7 +3455,7 @@ function ghLoad(){
   try { var c = JSON.parse(localStorage.getItem(GH_CFG_KEY) || 'null'); if (c && typeof c === 'object') for (var k in c) if (k in GH.cfg) GH.cfg[k] = c[k]; } catch (e) {}
   try { var d = JSON.parse(localStorage.getItem(GH_DOC_KEY) || 'null'); if (d && typeof d === 'object') { GH.doc.name = String(d.name || ''); GH.doc.sha = String(d.sha || ''); GH.doc.sig = String(d.sig || ''); } } catch (e) {}
   try {
-    var m = /[#&]cfg=([^&]+)/.exec(location.hash || '');
+    var m = RO ? null : /[#&]cfg=([^&]+)/.exec(location.hash || '');
     if (m) {
       var b = m[1].replace(/-/g, '+').replace(/_/g, '/'), c2 = JSON.parse(ghUnb64(b));
       ['owner', 'repo', 'branch', 'folder', 'token'].forEach(function(k){ if (typeof c2[k] === 'string' && c2[k]) GH.cfg[k] = c2[k]; });
@@ -3566,6 +3600,7 @@ function ghInfo(title, msg){ return ghModal({title: title, html: '<p>' + esc(msg
 
 /* ---- configuración */
 async function ghConfigDialog(){
+  if (RO) return;
   var c = GH.cfg;
   function field(id, lb, val, ph, type){ return '<label class="ghf"><span>' + lb + '</span><input id="' + id + '" type="' + (type || 'text') + '" value="' + esc(val) + '" placeholder="' + esc(ph || '') + '" autocomplete="off" autocapitalize="off" spellcheck="false"></label>'; }
   var html = '<p class="ghn">Los datos se guardan solo en este navegador. El token no queda en el archivo de la app.</p>' +
@@ -3624,6 +3659,7 @@ function ghStamp(){ var d = new Date(), p = function(n){ return ('0' + n).slice(
 
 /* ---- respaldos: una copia de todos los documentos en respaldos/AAAA-MM-DD_HHMM/ (Git Data API) */
 async function ghBackup(why){
+  if (RO) return null;
   var c = GH.cfg, files = await ghList();
   if (!files.length) return null;
   var ref = await ghApi('GET', ghRp('/git/ref/heads/' + ghEnc(c.branch)));
@@ -3639,6 +3675,7 @@ async function ghBackup(why){
   return stamp;
 }
 async function ghDailyBackup(){
+  if (RO) return;
   var today = todayIso(), last = ''; try { last = localStorage.getItem(GH_BK_KEY) || ''; } catch (e) {}
   if (last === today) return;
   try { var s = await ghBackup('primer guardado del día'); if (s) { try { localStorage.setItem(GH_BK_KEY, today); } catch (e) {} toast('Respaldo creado: ' + s); } }
@@ -3647,6 +3684,7 @@ async function ghDailyBackup(){
 
 /* ---- guardar */
 async function ghSave(manual, opts){
+  if (RO) return false;
   opts = opts || {};
   if (GH.busy) return false;
   if (!ghComplete()) { if (manual) await ghConfigDialog(); return false; }
@@ -3688,6 +3726,7 @@ async function ghNameDialog(title, def){
 }
 /* el archivo cambió (o ya existía) en GitHub desde la última vez que se abrió */
 async function ghConflict(manual, err){
+  if (RO) return false;
   var file = ghFilePath(GH.doc.name), remote = null;
   try { remote = await ghGetFile(file); }
   catch (e) {
@@ -3705,6 +3744,7 @@ async function ghConflict(manual, err){
   return await ghResolve();
 }
 async function ghResolve(){
+  if (RO) return;
   var cf = GH.conflict; if (!cf) return false;
   var r = await ghModal({title: 'El archivo cambió en GitHub', modal: true,
     html: '<p>“' + esc(GH.doc.name) + '” cambió en GitHub desde la última vez que lo abriste (otra persona u otro dispositivo lo guardó). No lo piso en silencio. ¿Qué querés hacer?</p><ul class="ghl"><li><b>Recargar desde GitHub:</b> traés la versión de GitHub y se pierden los cambios que no guardaste.</li><li><b>Sobrescribir:</b> tu versión reemplaza a la de GitHub (antes se hace un respaldo; la versión anterior queda en el historial).</li></ul>',
@@ -3725,6 +3765,7 @@ async function ghResolve(){
 
 /* ---- abrir / historial / borrar */
 async function ghOpenDialog(){
+  if (RO) return;
   if (ghDirty() && !(await ghConfirm('Hay cambios sin guardar', 'Si abrís otro documento, se reemplaza lo que tenés en pantalla. ¿Seguir?', 'Seguir'))) return;
   var files;
   try { files = await ghList(); } catch (e) { ghAuthFail(e); GH.err = ghMsg(e); ghRender(); toast(GH.err); return; }
@@ -3743,6 +3784,7 @@ async function ghOpenDialog(){
   } catch (e) { ghAuthFail(e); toast(ghMsg(e)); }
 }
 async function ghHistoryDialog(){
+  if (RO) return;
   if (!GH.doc.name) { await ghInfo('Historial', 'Primero guardá o abrí un documento.'); return; }
   var file = ghFilePath(GH.doc.name), list;
   try { list = await ghApi('GET', ghRp('/commits?path=' + encodeURIComponent(file) + '&sha=' + encodeURIComponent(GH.cfg.branch) + '&per_page=30')); }
@@ -3768,6 +3810,7 @@ async function ghHistoryDialog(){
   } catch (e) { ghAuthFail(e); toast(ghMsg(e)); }
 }
 async function ghDelete(){
+  if (RO) return;
   if (!GH.doc.name) { await ghInfo('Borrar', 'No hay un documento abierto para borrar.'); return; }
   if (!(await ghConfirm('Borrar de GitHub', 'Se borra “' + GH.doc.name + '” del repositorio (queda en el historial de Git). Antes se hace un respaldo. ¿Seguir?', 'Borrar', true))) return;
   var file = ghFilePath(GH.doc.name);
@@ -3783,6 +3826,7 @@ async function ghDelete(){
   }
 }
 async function ghManualBackup(){
+  if (RO) return;
   try { var s = await ghBackup('manual'); toast(s ? 'Respaldo creado: respaldos/' + s : 'No hay documentos para respaldar todavía.'); }
   catch (e) { ghAuthFail(e); toast('No se pudo hacer el respaldo. ' + ghMsg(e)); }
 }
@@ -3798,6 +3842,7 @@ async function ghCopyText(txt){
   return false;
 }
 async function ghLinkDialog(){
+  if (RO) return;
   if (!ghComplete()) { await ghInfo('Enlace de configuración', 'Primero completá la configuración de GitHub (usuario, repositorio y token).'); return; }
   var link = ghCfgLink();
   var html = '<p class="ghres bad" style="font-weight:600">Este enlace incluye el token de GitHub. Pasalo solo por un canal privado (mensaje directo) y no lo publiques ni lo pegues en lugares abiertos.</p>' +
@@ -3818,6 +3863,7 @@ async function ghLinkDialog(){
 
 /* ---- menú principal de GitHub */
 async function ghHub(){
+  if (RO) return;
   if (!ghComplete()) { await ghConfigDialog(); return; }
   var s = ghState();
   var html = '<p class="ghst ghp-' + s[0] + '"><i></i><b>' + esc(s[1]) + '</b></p>' +
@@ -4895,6 +4941,214 @@ function renderEnrCount(){
 $('#btnMg').addEventListener('click', openMg);
 $('#btnMgC').addEventListener('click', openMg);
 
+/* ---------- fecha del evento: vencimiento de los enlaces, registro de cambios y nombre del archivo */
+var MOTIVOS = ['Nadia', 'Reservas', 'Producción'];
+function fIso(v){ return /^\d{4}-\d{2}-\d{2}$/.test(v || '') ? v : ''; }
+function fDate(v){ var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; }
+function fPlus(v, n){
+  var d = fDate(v); if (!d) return '';
+  d.setDate(d.getDate() + n);
+  return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+}
+function fShort(v){ var d = fDate(v); return d ? d.toLocaleDateString('es-AR', {weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric'}) : ''; }
+function fVence(){ return fPlus(S.fecha.v, 1); }          /* el enlace deja de verse al terminar ese día */
+function fExpired(venceIso){ return !!venceIso && todayIso() > venceIso; }
+function fRnd(n){ var s = ''; while (s.length < n) s += Math.random().toString(36).slice(2); return s.slice(0, n); }
+function ensureUid(){ if (!S.uid) { S.uid = 'p' + fRnd(10); save(); } return S.uid; }
+function fUlt(){
+  var l = S.fecha.log || [];
+  for (var i = l.length - 1; i >= 0; i--) if (l[i].de) return {de: l[i].de, cuando: l[i].cuando};
+  return null;
+}
+function fechaReset(){ S.fecha = {v: '', log: []}; S.uid = ''; S.pubx = {copia: null}; save(); fechaRender(); }
+
+function fechaRender(){
+  var el = $('#evDate'); if (!el) return;
+  var v = S.fecha.v;
+  if (RO) {
+    el.hidden = !v;
+    el.innerHTML = v ? '<span class="evl">Evento</span><b>' + esc(fShort(v)) + '</b>' + (S.fecha.ult ? '<small>La fecha cambió: antes era ' + esc(fShort(S.fecha.ult.de)) + '.</small>' : '') : '';
+    return;
+  }
+  el.hidden = false;
+  if (!v) {
+    el.innerHTML = '<span class="evl">Fecha del evento</span><input type="date" id="evFecha" aria-label="Fecha del evento"><small>Con esta fecha se calcula cuándo vencen los enlaces que compartas.</small>';
+    return;
+  }
+  var nCambios = (S.fecha.log || []).filter(function(x){ return x.de; }).length;
+  el.innerHTML = '<span class="evl">Evento</span><b>' + esc(fShort(v)) + '</b>' +
+    '<button type="button" class="btn mini" id="evChg">Cambiar fecha</button>' +
+    (nCambios ? '<button type="button" class="link" id="evLog">Ver cambios (' + nCambios + ')</button>' : '') +
+    '<small>Los enlaces compartidos vencen el ' + esc(fShort(fVence())) + ' (un día después del evento).</small>';
+}
+
+/* nombre del archivo en GitHub: «AAAA-MM-DD nombre» */
+function fNameWith(name){
+  var base = String(name || '').replace(/^\d{4}-\d{2}-\d{2}[ _-]*/, '').trim() || 'Evento';
+  return ghSafeName((S.fecha.v ? S.fecha.v + ' ' : '') + base);
+}
+var ghNameDialog0 = ghNameDialog;
+ghNameDialog = async function(title, def){
+  var d = def;
+  if (S.fecha.v) d = fNameWith(/^plan-\d{4}-\d{2}-\d{2}$/.test(def || '') ? 'Evento' : def);
+  var r = await ghNameDialog0(title, d);
+  return r && S.fecha.v ? fNameWith(r) : r;
+};
+async function ghRenameFecha(){
+  if (RO || !ghComplete() || !GH.doc.name) return;
+  var nn = fNameWith(GH.doc.name);
+  if (nn === GH.doc.name) { if (ghDirty()) await ghSave(false); return; }
+  var old = {name: GH.doc.name, sha: GH.doc.sha, sig: GH.doc.sig};
+  GH.doc = {name: nn, sha: '', sig: ''}; ghStoreDoc();
+  var ok = await ghSave(true);
+  if (!ok) { GH.doc = old; ghStoreDoc(); ghRender(); toast('No se pudo renombrar el archivo en GitHub: sigue como «' + old.name + '».'); return; }
+  try {
+    await ghApi('DELETE', ghRp('/contents/' + ghEnc(ghFilePath(old.name))), {message: 'Renombra el plan «' + old.name + '» a «' + nn + '» (cambio de fecha)', sha: old.sha, branch: GH.cfg.branch});
+    toast('Archivo renombrado: ' + nn);
+  } catch (e) { toast('Quedó guardado como «' + nn + '», pero no se pudo borrar el archivo anterior «' + old.name + '».'); }
+}
+
+async function fechaSet(nueva, info){
+  var old = S.fecha.v;
+  if (!fIso(nueva) || nueva === old) return false;
+  info = info || {};
+  S.fecha.log = (S.fecha.log || []).concat([{cuando: new Date().toISOString(), de: old || null, a: nueva, motivos: info.motivos || [], detalle: info.detalle || ''}]);
+  S.fecha.v = nueva; ensureUid(); save(); fechaRender();
+  try { await ghRenameFecha(); } catch (e) { toast('No se pudo actualizar el archivo en GitHub.'); }
+  var r = null;
+  try { r = await pubFechaCambio(old); } catch (e) { toast('No se pudo actualizar el registro público: ' + pubMsg(e)); }
+  if (old && r && r.copia) toast('Copia pública actualizada: el enlace sigue igual y vence el ' + fShort(fVence()) + '.');
+  return true;
+}
+
+async function fechaCambiarDialog(){
+  var pend = null;
+  var html = '<p>¿Quién o qué motivó el cambio? Podés marcar más de uno y sumar un detalle.</p>' +
+    '<div class="mchips" id="fcMot">' + MOTIVOS.map(function(m){ return '<button type="button" class="mchip" data-m="' + esc(m) + '" aria-pressed="false">' + esc(m) + '</button>'; }).join('') + '</div>' +
+    '<label class="ghf"><span>Detalle del motivo</span><input id="fcDet" type="text" placeholder="Ej.: el salón movió el turno" autocomplete="off"></label>' +
+    '<label class="ghf"><span>Nueva fecha del evento</span><input id="fcFecha" type="date" value="' + esc(S.fecha.v) + '"></label>' +
+    '<div class="ghres" id="fcRes" role="status" aria-live="polite"></div>' +
+    '<p class="ghn">Al guardar: se renombra el archivo en GitHub, el cambio queda anotado adentro del archivo, el vencimiento pasa a ser un día después de la nueva fecha y el enlace compartido sigue siendo el mismo.</p>';
+  var r = await ghModal({title: 'Cambiar la fecha del evento', html: html, modal: true, actions: [
+    {id: 'no', t: 'Cancelar'},
+    {id: 'ok', t: 'Cambiar fecha', cls: 'primary', run: function(el){
+      var ms = [].slice.call(el.querySelectorAll('.mchip[aria-pressed="true"]')).map(function(b){ return b.dataset.m; });
+      var det = el.querySelector('#fcDet').value.trim(), nf = el.querySelector('#fcFecha').value, res = el.querySelector('#fcRes');
+      res.className = 'ghres bad';
+      if (!ms.length && !det) { res.textContent = 'Elegí un motivo o escribí la razón.'; return false; }
+      if (!fIso(nf)) { res.textContent = 'Elegí la nueva fecha.'; return false; }
+      if (nf === S.fecha.v) { res.textContent = 'Esa es la fecha que ya está cargada.'; return false; }
+      pend = {nf: nf, ms: ms, det: det};
+    }}
+  ], mount: function(el){
+    el.addEventListener('click', function(e){
+      var b = e.target.closest('.mchip'); if (!b) return;
+      b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+    });
+  }});
+  if (r === 'ok' && pend) await fechaSet(pend.nf, {motivos: pend.ms, detalle: pend.det});
+}
+function fechaLogDialog(){
+  var l = (S.fecha.log || []).slice().reverse().filter(function(x){ return x.de; });
+  var h = l.length ? '<ul class="flog">' + l.map(function(x){
+    var d = new Date(x.cuando), cu = isNaN(d) ? '' : d.toLocaleDateString('es-AR') + ' ' + d.toLocaleTimeString('es-AR', {hour: '2-digit', minute: '2-digit', hour12: false});
+    var mot = (x.motivos || []).join(', ') + (x.detalle ? ((x.motivos || []).length ? ' · ' : '') + x.detalle : '');
+    return '<li><b>' + esc(fShort(x.de)) + ' → ' + esc(fShort(x.a)) + '</b><span>' + esc(mot || 'Sin motivo') + '</span><small>' + esc(cu) + '</small></li>';
+  }).join('') + '</ul>' : '<p>Todavía no hubo cambios de fecha.</p>';
+  return ghModal({title: 'Cambios de la fecha del evento', html: h, actions: [{id: 'x', t: 'Cerrar', cls: 'primary'}]});
+}
+function shAskFecha(){
+  var out = '';
+  return ghModal({title: 'Fecha del evento', modal: true, enter: 'ok',
+    html: '<p>Para compartir hace falta la fecha del evento: el enlace vence un día después.</p>' +
+      '<label class="ghf"><span>Fecha del evento</span><input id="faFecha" type="date"></label><div class="ghres" id="faRes" role="status" aria-live="polite"></div>',
+    actions: [{id: 'no', t: 'Cancelar'}, {id: 'ok', t: 'Guardar fecha', cls: 'primary', run: function(el){
+      var v = el.querySelector('#faFecha').value;
+      if (!fIso(v)) { var r = el.querySelector('#faRes'); r.className = 'ghres bad'; r.textContent = 'Elegí una fecha.'; return false; }
+      out = v;
+    }}]
+  }).then(function(r){ return r === 'ok' ? out : ''; });
+}
+(function(){
+  var box = $('#evDate'); if (!box || RO) return;
+  box.addEventListener('change', function(e){
+    if (e.target.id !== 'evFecha') return;
+    var v = e.target.value; if (fIso(v)) fechaSet(v, {motivos: [], detalle: 'Fecha cargada'});
+  });
+  box.addEventListener('click', function(e){
+    if (e.target.closest('#evChg')) fechaCambiarDialog();
+    else if (e.target.closest('#evLog')) fechaLogDialog();
+  });
+})();
+
+/* el plan guardado/importado trae su fecha y su registro (viajan dentro de «evento») */
+var importPlan0 = importPlan;
+importPlan = function(text){
+  var before = S.plan; importPlan0(text);
+  if (S.plan === before) return;
+  var o = null; try { o = JSON.parse(text); } catch (e) {}
+  if (!(o && o.evento && o.evento.fecha)) { S.fecha = {v: '', log: []}; S.uid = ''; S.pubx = {copia: null}; save(); }
+  fechaRender();
+};
+var renderPlan0 = renderPlan;
+renderPlan = function(a){ renderPlan0(a); fechaRender(); };
+
+/* ---------- quitar recetas del plan mientras se recorren (ficha, Menú, Producción) con «Deshacer» */
+var qTimer = 0;
+function toastUndo(msg, fn){
+  var t = $('#toast');
+  t.innerHTML = '<span></span><button type="button" class="tundo">Deshacer</button>';
+  t.firstChild.textContent = msg;
+  t.classList.add('show', 'act');
+  clearTimeout(toastT); clearTimeout(qTimer);
+  var hide = function(){ t.classList.remove('show'); setTimeout(function(){ if (!t.classList.contains('show')) t.classList.remove('act'); }, 250); };
+  qTimer = setTimeout(hide, 8000);
+  t.querySelector('.tundo').onclick = function(){ clearTimeout(qTimer); hide(); fn(); };
+}
+var toast0 = toast;
+toast = function(msg){ clearTimeout(qTimer); var t = $('#toast'); t.classList.remove('act'); toast0(msg); };
+
+function quitarDelPlan(k, id){
+  if (RO) return false;
+  var p = planOf(k, id); if (!p) return false;
+  var ix = S.plan.indexOf(p), o = k === 'F' ? byF[id] : byId[id], nm = o ? o.n : '';
+  S.plan = S.plan.filter(function(x){ return x !== p; });
+  touch();
+  if (xOpen) xClose();
+  setTab(tab, true);
+  toastUndo('Quitado del plan: ' + nm, function(){
+    if (planOf(k, id)) return;
+    S.plan.splice(Math.min(ix, S.plan.length), 0, p);
+    touch(); setTab(tab, true);
+    toast('Vuelve al plan: ' + nm);
+  });
+  return true;
+}
+
+function quitarBtn(k, id, cls){
+  return RO || !planOf(k, id) ? '' : '<button type="button" class="' + cls + ' qdel" data-quitar="' + k + ':' + id + '">Quitar del plan</button>';
+}
+var fichaHtml0 = fichaHtml;
+fichaHtml = function(f){
+  var h = fichaHtml0(f), b = quitarBtn('F', f.id, 'btn mini danger');
+  return b ? h.replace(/<\/div><\/div>$/, b + '</div></div>') : h;
+};
+var menuCard0 = menuCard;
+menuCard = function(f, s){
+  var h = menuCard0(f, s), b = quitarBtn('F', f.id, 'link tg');
+  return b ? h.replace(/<\/article>$/, b + '</article>') : h;
+};
+var rollHtml0 = rollHtml;
+rollHtml = function(p){
+  var h = rollHtml0(p), b = quitarBtn(p.k, p.id, 'rm');
+  return b ? h.replace(/<\/div><\/details>$/, b + '</div></details>') : h;
+};
+document.addEventListener('click', function(e){
+  var b = e.target.closest('[data-quitar]'); if (!b) return;
+  e.preventDefault(); e.stopPropagation();
+  var a = b.dataset.quitar.split(':'); quitarDelPlan(a[0], a[1]);
+}, true);
+
 /* ---------- compartir en solo lectura: enlace con el plan cargado + versión que no se puede modificar */
 var SHARE_KEY = 'rolls.share.base.v1';
 function shBase(){ try { return localStorage.getItem(SHARE_KEY) || ''; } catch (e) { return ''; } }
@@ -4906,52 +5160,225 @@ function shNorm(u){
   try { var x = new URL(u); if (!/^https?:$/.test(x.protocol) || x.hostname.indexOf('.') < 0) return ''; } catch (e) { return ''; }
   return u;
 }
-function shB64(bytes){ var s = ''; for (var i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
-function shUnB64(s){
-  s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '=';
-  var b = atob(s), u = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u;
-}
-async function shEncode(text){
-  var raw = new TextEncoder().encode(text);
-  if (window.CompressionStream) {
-    try {
-      var buf = await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer();
-      return 'z.' + shB64(new Uint8Array(buf));
-    } catch (e) {}
-  }
-  return 'b.' + shB64(raw);
-}
-async function shDecode(p){
-  var k = p.slice(0, 2), u = shUnB64(p.slice(2));
-  if (k === 'z.') {
-    if (!window.DecompressionStream) throw new Error('sin DecompressionStream');
-    return new TextDecoder().decode(await new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
-  }
-  if (k === 'b.') return new TextDecoder().decode(u);
-  throw new Error('formato');
-}
-function shPayloadText(){
+function shSigOf(o){ var c = JSON.parse(JSON.stringify(o)); delete c.exportado; return JSON.stringify(c); }
+/* lo que sale hacia afuera: el plan y la fecha, sin aprendizaje, sin motivos internos ni datos de publicación */
+function shPayloadObj(){
   var o = JSON.parse(planFileText());
-  if (o.evento) delete o.evento.learn;
-  return JSON.stringify(o);
+  var ev = o.evento || {}; delete ev.learn; delete ev.pubx; delete ev.uid;
+  ev.fecha = {v: S.fecha.v, log: [], ult: fUlt()};
+  o.evento = ev; return o;
 }
-async function shLink(base){ return base + '#p=' + await shEncode(shPayloadText()); }
+function shPayloadText(){ return JSON.stringify(shPayloadObj()); }
+function pubDocObj(id){
+  var o = shPayloadObj();
+  o.estado = {produccion_hecha: S.done, mise: S.mise, inicio: S.start, productos_hechos: S.fd};
+  o.publico = {id: id, evento: S.fecha.v, vence: fVence()};
+  return o;
+}
 
-function shAskBase(cur){
-  return ghModal({
-    title: 'Dirección de la versión de solo lectura',
-    html: '<p>Pegá la dirección donde publicaste la versión de solo lectura en GitHub. Queda guardada en este navegador.</p>' +
-      '<label class="ghf"><span>Dirección</span><input id="shBase" type="url" inputmode="url" autocapitalize="off" autocomplete="off" value="' + esc(cur || '') + '" placeholder="https://tu-usuario.github.io/rolls/"></label>' +
-      '<div class="ghres" id="shRes" role="status" aria-live="polite"></div>',
-    enter: 'ok',
-    actions: [{id: 'no', t: 'Cancelar'}, {id: 'ok', t: 'Guardar', cls: 'primary', run: function(el){
-      var v = shNorm(el.querySelector('#shBase').value);
-      if (!v) { el.querySelector('#shRes').textContent = 'Esa dirección no parece válida. Tiene que empezar con https:// e incluir el dominio.'; return false; }
-      shSetBase(v); el.dataset.val = v;
-    }}],
-    mount: function(el){ el._ok = true; }
-  }).then(function(r){ return r === 'ok' ? shBase() : ''; });
+/* ---------- publicación en el repositorio público (copias automáticas + registro de enlaces) */
+var PUB_KEY = 'rolls.pub.cfg.v1';
+var PUB = {cfg: {owner: '', repo: '', branch: 'main', folder: 'compartidos', token: ''}, busy: false, err: ''};
+function pubLoad(){
+  try { var c = JSON.parse(localStorage.getItem(PUB_KEY) || 'null'); if (c && typeof c === 'object') for (var k in c) if (k in PUB.cfg) PUB.cfg[k] = c[k]; } catch (e) {}
 }
+function pubStore(){ try { localStorage.setItem(PUB_KEY, JSON.stringify(PUB.cfg)); } catch (e) {} }
+function pubToken(){ return PUB.cfg.token || GH.cfg.token || ''; }
+function pubComplete(){ var c = PUB.cfg; return !RO && !!(c.owner && c.repo && c.branch && pubToken()); }
+function pubFolder(){ return String(PUB.cfg.folder || '').replace(/^\/+|\/+$/g, ''); }
+function pubPath(name){ var f = pubFolder(); return (f ? f + '/' : '') + name; }
+function pubMsg(e){
+  if (!e) return 'Error desconocido.';
+  if (e.net) return e.message;
+  if (e.status === 401) return 'GitHub no aceptó el token.';
+  if (e.status === 403) return 'GitHub rechazó la operación: el token no puede escribir en el repositorio público o se superó el límite de pedidos.';
+  if (e.status === 404) return 'GitHub no encontró el repositorio público o el token no tiene acceso a él (el token tiene que incluir ese repositorio con permiso Contents: lectura y escritura).';
+  return e.message || 'Error desconocido.';
+}
+async function pubApi(method, path, body){
+  var c = PUB.cfg, res, headers = {'Authorization': 'Bearer ' + pubToken(), 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28'};
+  if (body) headers['Content-Type'] = 'application/json';
+  try { res = await fetch('https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(c.repo) + path, {method: method, headers: headers, body: body ? JSON.stringify(body) : undefined, cache: 'no-store'}); }
+  catch (e) { var ne = new Error('No hay conexión con GitHub.'); ne.net = true; throw ne; }
+  var data = null; try { data = await res.json(); } catch (e) {}
+  if (!res.ok) { var er = new Error((data && data.message) || ('Error ' + res.status)); er.status = res.status; throw er; }
+  return data;
+}
+async function pubGet(name){
+  try {
+    var d = await pubApi('GET', '/contents/' + ghEnc(pubPath(name)) + '?ref=' + encodeURIComponent(PUB.cfg.branch));
+    return {sha: d.sha, text: ghUnb64(d.content)};
+  } catch (e) { if (e.status === 404) return null; throw e; }
+}
+async function pubPut(name, text, msg, sha){
+  var b = {message: msg, content: ghB64(text), branch: PUB.cfg.branch}; if (sha) b.sha = sha;
+  var r = await pubApi('PUT', '/contents/' + ghEnc(pubPath(name)), b); return r.content.sha;
+}
+async function pubDel(name, sha, msg){ await pubApi('DELETE', '/contents/' + ghEnc(pubPath(name)), {message: msg, sha: sha, branch: PUB.cfg.branch}); }
+async function pubRemoveFile(name, msg){ var g = await pubGet(name); if (g) await pubDel(name, g.sha, msg); }
+
+/* registro: qué enlaces existen, hasta cuándo valen y si fueron dados de baja (sin datos del plan) */
+var REG_FILE = '_registro.json';
+async function regRead(){
+  var g = await pubGet(REG_FILE), d = {v: 1, enlaces: {}};
+  if (g) { try { var o = JSON.parse(g.text); if (o && o.enlaces && typeof o.enlaces === 'object') d = o; } catch (e) {} }
+  return {sha: g ? g.sha : '', data: d};
+}
+async function regUpdate(mut, msg){
+  for (var i = 0; i < 4; i++) {
+    var r = await regRead(), ch = mut(r.data);
+    if (ch === false) return r.data;
+    try { await pubPut(REG_FILE, JSON.stringify(r.data, null, 1), msg, r.sha); return r.data; }
+    catch (e) { if (e.status === 409 || e.status === 422) continue; throw e; }
+  }
+  throw new Error('No se pudo actualizar el registro (conflicto). Probá de nuevo.');
+}
+function shCoords(){ var c = PUB.cfg; return '&r=' + c.owner + '/' + c.repo + '&b=' + encodeURIComponent(c.branch) + '&f=' + encodeURIComponent(pubFolder()); }
+
+/* copia pública: un archivo por plan (nombre = identificador, no el nombre del plan) que se mantiene al día */
+async function pubSync(force){
+  if (RO || !S.pubx.copia || !pubComplete() || PUB.busy) return false;
+  var c = S.pubx.copia, doc = pubDocObj(c.id), sg = shSigOf(doc);
+  if (!force && sg === c.sig) return false;
+  PUB.busy = true;
+  try {
+    var g = await pubGet(c.id + '.json');
+    if (g) { try { if (shSigOf(JSON.parse(g.text)) === sg) { c.sig = sg; save(); return false; } } catch (e) {} }
+    await pubPut(c.id + '.json', JSON.stringify(doc, null, 1), 'Actualiza la copia pública', g ? g.sha : '');
+    c.sig = sg; save(); PUB.err = ''; return true;
+  } catch (e) { PUB.err = pubMsg(e); return false; }
+  finally { PUB.busy = false; }
+}
+async function pubEnsureCopy(){
+  var uid = ensureUid(), vence = fVence(), id = '';
+  await regUpdate(function(d){
+    var ch = false, e = S.pubx.copia && d.enlaces[S.pubx.copia.id];
+    if (!(e && e.estado === 'activo' && e.plan === uid)) {
+      e = null;
+      Object.keys(d.enlaces).forEach(function(k){ var x = d.enlaces[k]; if (!e && x.plan === uid && x.tipo === 'copia' && x.estado === 'activo') { e = x; id = k; } });
+      if (!e) { id = 'c' + fRnd(10); d.enlaces[id] = {plan: uid, tipo: 'copia', evento: S.fecha.v, vence: vence, estado: 'activo', creado: new Date().toISOString()}; ch = true; }
+    } else id = S.pubx.copia.id;
+    var cur = d.enlaces[id];
+    if (cur.vence !== vence || cur.evento !== S.fecha.v) { cur.vence = vence; cur.evento = S.fecha.v; ch = true; }
+    return ch;
+  }, 'Registra la copia pública');
+  if (!S.pubx.copia || S.pubx.copia.id !== id) S.pubx.copia = {id: id, sig: ''};
+  save();
+  await pubSync(true);
+  if (PUB.err) throw new Error(PUB.err);
+  return id;
+}
+/* cambio de fecha: la copia sigue con el mismo enlace y el vencimiento nuevo */
+async function pubFechaCambio(){
+  if (RO || !pubComplete() || !S.uid) return null;
+  var uid = S.uid, vence = fVence(), copia = false;
+  await regUpdate(function(d){
+    var ch = false;
+    Object.keys(d.enlaces).forEach(function(k){
+      var e = d.enlaces[k]; if (e.plan !== uid || e.estado !== 'activo') return;
+      e.evento = S.fecha.v; e.vence = vence; copia = true; ch = true;
+    });
+    return ch;
+  }, 'Cambio de fecha del evento');
+  if (S.pubx.copia) await pubSync(true);
+  return {copia: copia};
+}
+/* retirar ahora: borra la copia y da de baja todos los enlaces de este plan */
+async function pubRetirar(){
+  if (!pubComplete()) throw new Error('No hay publicación configurada.');
+  var uid = ensureUid(), now = new Date().toISOString(), ids = [];
+  await regUpdate(function(d){
+    var ch = false; ids = [];
+    Object.keys(d.enlaces).forEach(function(k){
+      var e = d.enlaces[k]; if (e.plan !== uid || e.estado !== 'activo') return;
+      e.estado = 'retirado'; e.causa = 'retirado a mano'; e.cierre = now; ch = true; if (e.tipo === 'copia') ids.push(k);
+    });
+    return ch;
+  }, 'Retira los enlaces del plan');
+  for (var i = 0; i < ids.length; i++) await pubRemoveFile(ids[i] + '.json', 'Retira la copia pública');
+  if (S.pubx.copia) await pubRemoveFile(S.pubx.copia.id + '.json', 'Retira la copia pública');
+  S.pubx = {copia: null}; save();
+}
+/* limpieza: lo vencido se borra de la carpeta visible (queda en el historial de ese repositorio) */
+async function pubLimpiar(){
+  if (RO || !pubComplete()) return 0;
+  var hoy = todayIso(), now = new Date().toISOString(), ids = [];
+  await regUpdate(function(d){
+    var ch = false; ids = [];
+    Object.keys(d.enlaces).forEach(function(k){
+      var e = d.enlaces[k];
+      if (e.estado === 'activo' && e.vence && e.vence < hoy) { e.estado = 'vencido'; e.causa = 'vencido'; e.cierre = now; ch = true; if (e.tipo === 'copia') ids.push(k); }
+      else if (e.estado !== 'activo' && e.cierre && (Date.parse(now) - Date.parse(e.cierre)) > 120 * 864e5) { delete d.enlaces[k]; ch = true; }
+    });
+    return ch;
+  }, 'Limpia enlaces vencidos');
+  for (var i = 0; i < ids.length; i++) await pubRemoveFile(ids[i] + '.json', 'Borra la copia vencida');
+  if (S.pubx.copia && ids.indexOf(S.pubx.copia.id) >= 0) { S.pubx.copia = null; save(); }
+  return ids.length;
+}
+
+/* mantener al día la copia: al guardar en GitHub y cada minuto si hubo cambios */
+var ghSaveBase = ghSave;
+ghSave = async function(manual, opts){
+  var ok = await ghSaveBase(manual, opts);
+  if (ok && S.pubx.copia) { try { await pubSync(false); } catch (e) {} }
+  return ok;
+};
+
+/* ---------- configuración de la publicación (dirección de la app de solo lectura + repositorio público) */
+function shDerive(base){
+  try {
+    var u = new URL(base), m = /^([^.]+)\.github\.io$/i.exec(u.hostname), seg = u.pathname.split('/').filter(Boolean);
+    if (m && seg.length) return {owner: m[1], repo: seg[0]};
+  } catch (e) {}
+  return null;
+}
+function shAutoCfg(base){
+  if (pubComplete()) return;
+  var d = shDerive(base); if (!d) return;
+  if (!PUB.cfg.owner) PUB.cfg.owner = d.owner;
+  if (!PUB.cfg.repo) PUB.cfg.repo = d.repo;
+  if (pubComplete()) pubStore();
+}
+function shConfigDialog(){
+  var c = PUB.cfg, base = shBase();
+  function f(id, lb, val, ph, type){ return '<label class="ghf"><span>' + lb + '</span><input id="' + id + '" type="' + (type || 'text') + '" value="' + esc(val || '') + '" placeholder="' + esc(ph || '') + '" autocomplete="off" autocapitalize="off" spellcheck="false"></label>'; }
+  var d = shDerive(base) || {};
+  return ghModal({title: 'Publicación de solo lectura', modal: true, enter: 'ok',
+    html: '<p class="ghn">La dirección es la de la app de solo lectura. El repositorio público es donde se guardan las copias y el registro de enlaces; tiene que ser público. El token por defecto es el mismo de GitHub.</p>' +
+      f('shBase', 'Dirección de la app de solo lectura', base, 'https://tu-usuario.github.io/recetas/readonly/', 'url') +
+      f('pbOwner', 'Usuario del repositorio público', c.owner || d.owner, 'tu-usuario') + f('pbRepo', 'Repositorio público', c.repo || d.repo, 'recetas') +
+      f('pbBranch', 'Rama', c.branch, 'main') + f('pbFolder', 'Carpeta de copias', c.folder, 'compartidos') +
+      f('pbToken', 'Token (vacío = el mismo de GitHub)', c.token, 'github_pat_…', 'password') +
+      '<div class="ghres" id="pbRes" role="status" aria-live="polite"></div>',
+    actions: [
+      {id: 'test', t: 'Probar', run: async function(el){
+        var res = el.querySelector('#pbRes'), keep = JSON.parse(JSON.stringify(PUB.cfg));
+        PUB.cfg = {owner: el.querySelector('#pbOwner').value.trim(), repo: el.querySelector('#pbRepo').value.trim(), branch: el.querySelector('#pbBranch').value.trim() || 'main', folder: el.querySelector('#pbFolder').value.trim() || 'compartidos', token: el.querySelector('#pbToken').value.trim()};
+        res.className = 'ghres'; res.textContent = 'Probando…';
+        try {
+          if (!pubToken()) throw new Error('Falta el token.');
+          var r = await pubApi('GET', '');
+          if (r.private) { res.textContent = 'El repositorio es privado: tiene que ser público para que otros abran los enlaces.'; res.className = 'ghres bad'; }
+          else if (r.permissions && r.permissions.push === false) { res.textContent = 'El token puede leer pero no escribir en este repositorio.'; res.className = 'ghres bad'; }
+          else { res.textContent = 'Listo: repositorio público y con permiso para escribir.'; res.className = 'ghres ok'; }
+        } catch (e) { res.textContent = pubMsg(e); res.className = 'ghres bad'; }
+        finally { PUB.cfg = keep; }
+        return false;
+      }},
+      {id: 'no', t: 'Cancelar'},
+      {id: 'ok', t: 'Guardar', cls: 'primary', run: function(el){
+        var res = el.querySelector('#pbRes'), b = shNorm(el.querySelector('#shBase').value);
+        res.className = 'ghres bad';
+        if (!b) { res.textContent = 'La dirección no parece válida: tiene que empezar con https:// e incluir el dominio.'; return false; }
+        var n = {owner: el.querySelector('#pbOwner').value.trim(), repo: el.querySelector('#pbRepo').value.trim(), branch: el.querySelector('#pbBranch').value.trim() || 'main', folder: el.querySelector('#pbFolder').value.trim() || 'compartidos', token: el.querySelector('#pbToken').value.trim()};
+        if (!n.owner || !n.repo) { res.textContent = 'Completá usuario y repositorio públicos.'; return false; }
+        shSetBase(b); PUB.cfg = n; pubStore();
+      }}
+    ]
+  }).then(function(r){ return r === 'ok'; });
+}
+
 function shCopy(text, ta){
   try { if (navigator.clipboard && navigator.clipboard.writeText) { return navigator.clipboard.writeText(text).then(function(){ return true; }, function(){ return shCopyOld(ta); }); } } catch (e) {}
   return Promise.resolve(shCopyOld(ta));
@@ -4959,78 +5386,79 @@ function shCopy(text, ta){
 function shCopyOld(ta){
   try { ta.focus(); ta.select(); ta.setSelectionRange(0, ta.value.length); return document.execCommand('copy'); } catch (e) { return false; }
 }
-function shLiveLink(base){
-  var c = GH.cfg, h = '#n=' + encodeURIComponent(GH.doc.name) + '&r=' + c.owner + '/' + c.repo + '&b=' + encodeURIComponent(c.branch);
-  var f = ghFolder(); if (f) h += '&f=' + encodeURIComponent(f);
-  return base + h;
-}
-function shShowLink(urls, n){
-  var mode = urls.live ? 'live' : 'fixed', c = GH.cfg;
-  function cur(){ return urls[mode]; }
-  function expl(){
-    if (RO) return 'Quien abra este enlace ve este plan, sin poder modificarlo.';
-    if (mode === 'live') return 'Quien abra este enlace ve el plan «' + esc(GH.doc.name) + '» sin poder modificarlo, y se actualiza solo cada vez que la app lo guarda en GitHub' +
-      (Number(c.autoMin) > 0 ? ' (autoguardado cada ' + c.autoMin + ' min).' : ' (tenés el autoguardado apagado: guardá a mano).');
-    return 'Quien abra este enlace ve el plan de ahora (' + n + (n === 1 ? ' producto' : ' productos') + ') en la versión de solo lectura. No puede modificarlo y no se actualiza: si cambiás el plan, generá un enlace nuevo.';
-  }
+function shShowLink(st){
   var acts = [];
-  acts.push({id: 'copy', t: 'Copiar enlace', cls: 'primary', run: async function(el){
-    var ta = el.querySelector('#shUrl'), ok = await shCopy(ta.value, ta);
-    toast(ok ? 'Enlace copiado.' : 'No se pudo copiar solo: mantené apretado el texto y copialo.'); return false;
+  function expl(){
+    var v = esc(fShort(fVence()));
+    return 'Quien abra este enlace ve el plan sin poder modificarlo. Se actualiza solo cuando cambiás el plan (la app lo publica cada minuto) y deja de verse el <b>' + v + '</b>, un día después del evento.';
+  }
+  if (st.url) {
+    acts.push({id: 'copy', t: 'Copiar enlace', cls: 'primary', run: async function(el){
+      var ta = el.querySelector('#shUrl'), ok = await shCopy(ta.value, ta);
+      toast(ok ? 'Enlace copiado.' : 'No se pudo copiar solo: mantené apretado el texto y copialo.'); return false;
+    }});
+    acts.push({id: 'open', t: 'Abrir', run: function(el){ window.open(el.querySelector('#shUrl').value, '_blank', 'noopener'); }});
+    if (navigator.share) acts.push({id: 'share', t: 'Enviar…', run: async function(el){
+      try { await navigator.share({title: 'Producción de rolls', url: el.querySelector('#shUrl').value}); } catch (e) {} return false;
+    }});
+  }
+  if (pubComplete() && S.pubx.copia) acts.push({id: 'ret', t: 'Retirar ahora', cls: 'danger', run: async function(el){
+    var ok = await ghConfirm('Retirar ahora', 'Se borra la copia pública y se da de baja el enlace de este plan: nadie podrá verlo, aunque todavía no sea la fecha de vencimiento.', 'Retirar', true);
+    if (!ok) return false;
+    try { await pubRetirar(); toast('Plan retirado: el enlace ya no lo muestra.'); }
+    catch (e) { toast('No se pudo retirar. ' + pubMsg(e)); return false; }
   }});
-  acts.push({id: 'open', t: 'Abrir', run: function(el){ window.open(el.querySelector('#shUrl').value, '_blank', 'noopener'); }});
-  if (navigator.share) acts.push({id: 'share', t: 'Enviar…', run: async function(el){
-    try { await navigator.share({title: 'Producción de rolls', url: el.querySelector('#shUrl').value}); } catch (e) {} return false;
-  }});
-  if (urls.live && urls.fixed) acts.push({id: 'mode', t: 'Usar enlace fijo', run: function(el){
-    mode = mode === 'live' ? 'fixed' : 'live';
-    el.querySelector('#shUrl').value = cur(); el.querySelector('#shExp').innerHTML = expl();
-    el.querySelector('button[data-id=mode]').textContent = mode === 'live' ? 'Usar enlace fijo' : 'Usar enlace automático';
-    el.querySelector('#shNote').style.display = mode === 'live' ? '' : 'none';
-    return false;
-  }});
-  if (!RO) acts.push({id: 'chg', t: 'Cambiar dirección', run: async function(el){
-    var nb = await shAskBase(shBase()); if (!nb) return false;
-    urls.fixed = await shLink(nb); if (urls.live) urls.live = shLiveLink(nb);
-    el.querySelector('#shUrl').value = cur(); return false;
-  }});
+  acts.push({id: 'cfg', t: 'Configuración', run: async function(){ await shConfigDialog(); }});
   acts.push({id: 'x', t: 'Cerrar'});
   return ghModal({
-    title: RO ? 'Enlace de este plan' : (mode === 'live' ? 'Enlace automático de solo lectura' : 'Enlace de solo lectura'),
-    html: '<p id="shExp">' + expl() + '</p>' +
-      '<textarea class="shurl" id="shUrl" rows="4" readonly spellcheck="false">' + esc(cur()) + '</textarea>' +
+    title: 'Enlace de solo lectura',
+    html: (st.url ? '<p id="shExp">' + expl() + '</p><textarea class="shurl" id="shUrl" rows="4" readonly spellcheck="false">' + esc(st.url) + '</textarea>' : '') +
       '<p class="ghn" id="shNote"></p>' +
-      (!RO && !urls.live ? '<p class="ghn">Para un enlace que se actualice solo, conectá GitHub (menú ⋯ → Guardar en GitHub) y guardá el plan con un nombre.</p>' : '') +
-      (cur().length > 6000 ? '<p class="ghn">El enlace es largo (' + cur().length + ' caracteres): algunas apps de mensajes pueden cortarlo.</p>' : ''),
+      (st.err ? '<p class="ghres bad">' + esc(st.err) + '</p>' : ''),
     actions: acts,
     mount: function(el){
-      var ta = el.querySelector('#shUrl'); ta.addEventListener('focus', function(){ ta.select(); });
-      if (urls.live) {
-        fetch('https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(c.repo), {headers: {'Accept': 'application/vnd.github+json'}}).then(function(r){
-          if (r.status === 404 || r.status === 401) el.querySelector('#shNote').textContent = 'Ojo: el repositorio parece privado. Para que otros abran el enlace tiene que ser público.';
-          else if (r.ok) return r.json().then(function(d){ if (d && d.private) el.querySelector('#shNote').textContent = 'Ojo: el repositorio es privado. Para que otros abran el enlace tiene que ser público.'; });
+      var ta = el.querySelector('#shUrl'); if (ta) ta.addEventListener('focus', function(){ ta.select(); });
+      if (pubComplete()) {
+        fetch('https://api.github.com/repos/' + encodeURIComponent(PUB.cfg.owner) + '/' + encodeURIComponent(PUB.cfg.repo), {headers: {'Accept': 'application/vnd.github+json'}}).then(function(r){
+          if (r.status === 404 || r.status === 401) el.querySelector('#shNote').textContent = 'Ojo: el repositorio público parece privado. Para que otros abran el enlace tiene que ser público.';
+          else if (r.ok) return r.json().then(function(d){ if (d && d.private) el.querySelector('#shNote').textContent = 'Ojo: el repositorio público es privado. Para que otros abran el enlace tiene que ser público.'; });
         }).catch(function(){});
       }
     }
   });
 }
 async function shareOpen(){
-  if (RO) { shShowLink({fixed: location.href}, S.plan.length); return; }
-  if (!S.plan.length) { toast('El plan está vacío: no hay nada para compartir.'); return; }
-  var base = shBase();
-  if (!base) { base = await shAskBase(''); if (!base) return; }
-  var urls = {};
-  try { urls.fixed = await shLink(base); } catch (e) { toast('No se pudo armar el enlace.'); return; }
-  if (ghComplete()) {
-    if (!GH.doc.name || ghDirty()) await ghSave(true);
-    if (GH.doc.name && !ghDirty() && !GH.err && !GH.conflict) urls.live = shLiveLink(base);
+  if (RO) {
+    await ghModal({title: 'Enlace de este plan', html: '<p>Quien abra este enlace ve este plan, sin poder modificarlo.</p><textarea class="shurl" id="shUrl" rows="4" readonly spellcheck="false">' + esc(location.href) + '</textarea>',
+      actions: [{id: 'copy', t: 'Copiar enlace', cls: 'primary', run: async function(el){ var ta = el.querySelector('#shUrl'), ok = await shCopy(ta.value, ta); toast(ok ? 'Enlace copiado.' : 'No se pudo copiar solo: mantené apretado el texto y copialo.'); return false; }}, {id: 'x', t: 'Cerrar'}]});
+    return;
   }
-  shShowLink(urls, S.plan.length);
+  if (!S.plan.length) { toast('El plan está vacío: no hay nada para compartir.'); return; }
+  if (!S.fecha.v) { var fv = await shAskFecha(); if (!fv) return; await fechaSet(fv, {motivos: [], detalle: 'Fecha cargada al compartir'}); }
+  if (fExpired(fVence())) { toast('La fecha del evento ya pasó: cambiala para poder compartir.'); return; }
+  var base = shBase();
+  if (!base) { var ok = await shConfigDialog(); if (!ok) return; base = shBase(); }
+  shAutoCfg(base);
+  var st = {url: '', err: ''};
+  if (!pubComplete()) st.err = 'Falta completar la publicación en el repositorio público. Tocá «Configuración».';
+  else {
+    try { st.url = base + '#c=' + await pubEnsureCopy() + shCoords(); }
+    catch (e) { st.err = 'No se pudo publicar la copia automática: ' + pubMsg(e); }
+    pubLimpiar().catch(function(){});
+  }
+  var res = await shShowLink(st);
+  if (res === 'cfg') shareOpen();
 }
 $('#btnShare').addEventListener('click', shareOpen);
+if (!RO) {
+  pubLoad();
+  setInterval(function(){ if (S.pubx.copia && !document.hidden) pubSync(false); }, 60000);
+  document.addEventListener('visibilitychange', function(){ if (!document.hidden && S.pubx.copia) pubSync(false); });
+  setTimeout(function(){ pubLimpiar().catch(function(){}); }, 4000);
+}
 
-/* ---- versión de solo lectura */
-var RO_G = ['plan', 'have', 'stock', 'uw', 'mise', 'done', 'fd', 'checks', 'mode', 'cooks', 'start', 'mg', 'hand', 'band', 'cont', 'cierre', 'learn', 'sal', 'enr', 'example'];
+/* ---------- versión de solo lectura */
+var RO_G = ['plan', 'have', 'stock', 'uw', 'mise', 'done', 'fd', 'checks', 'mode', 'cooks', 'start', 'mg', 'hand', 'band', 'cont', 'cierre', 'learn', 'sal', 'enr', 'example', 'fecha'];
 var roSnap = null, roBusy = false;
 function roTake(){ roSnap = {}; RO_G.forEach(function(k){ roSnap[k] = JSON.stringify(S[k]); }); }
 function roGuard(){
@@ -5053,66 +5481,79 @@ function roLock(){
   });
 }
 
-/* ---- enlace automático: lee el plan guardado en GitHub y se refresca solo */
-var RL = null, roLiveTimer = 0, roLiveBusy = false;
-function roLiveParse(){
+/* lectura de archivos públicos (API de GitHub con respaldo en raw) */
+var RL = null, roTimers = [], roBusyLoad = false;
+function roParse(){
   var h = location.hash || '';
   function g(k){ var m = new RegExp('[#&]' + k + '=([^&]*)').exec(h); if (!m) return ''; try { return decodeURIComponent(m[1]); } catch (e) { return ''; } }
-  var n = g('n'), r = g('r'), b = g('b') || 'main', f = g('f');
-  if (!n || !/^[\w.-]+\/[\w.-]+$/.test(r) || !/^[\w.\/-]+$/.test(b) || /[?#*"<>|\\]/.test(f + n) || /\.\./.test(f + n + b)) return null;
-  f = f.replace(/^\/+|\/+$/g, '');
-  return {n: n, r: r, b: b, path: (f ? f + '/' : '') + n + '.json', last: null, at: null, exp: '', err: '', first: true};
+  var o = {c: g('c'), r: g('r'), b: g('b') || 'main', f: g('f').replace(/^\/+|\/+$/g, ''), p: g('p')};
+  if (o.r && (!/^[\w.-]+\/[\w.-]+$/.test(o.r) || !/^[\w.\/-]+$/.test(o.b) || /[?#*"<>|\\]|\.\./.test(o.f + o.b))) o.r = '';
+  if (o.c && !/^c[a-z0-9]{6,20}$/.test(o.c)) o.c = '';
+  return o;
 }
-async function roLiveFetch(){
-  var api = 'https://api.github.com/repos/' + RL.r + '/contents/' + ghEnc(RL.path) + '?ref=' + encodeURIComponent(RL.b);
+async function roFile(name){          /* texto del archivo, o null si no existe */
+  var path = (RL.f ? RL.f + '/' : '') + name;
   try {
-    var res = await fetch(api, {headers: {'Accept': 'application/vnd.github+json'}, cache: 'no-cache'});
+    var res = await fetch('https://api.github.com/repos/' + RL.r + '/contents/' + ghEnc(path) + '?ref=' + encodeURIComponent(RL.b), {headers: {'Accept': 'application/vnd.github+json'}, cache: 'no-cache'});
     if (res.ok) { var d = await res.json(); if (d && d.content) return ghUnb64(d.content); }
-    else if (res.status === 404) { var e = new Error('nf'); e.nf = true; throw e; }
-  } catch (e) { if (e.nf) throw e; }
-  var r2 = await fetch('https://raw.githubusercontent.com/' + RL.r + '/' + ghEnc(RL.b) + '/' + ghEnc(RL.path) + '?t=' + Date.now(), {cache: 'no-store'});
-  if (!r2.ok) { var e2 = new Error('http ' + r2.status); e2.nf = r2.status === 404; throw e2; }
+    else if (res.status === 404) return null;
+  } catch (e) {}
+  var r2 = await fetch('https://raw.githubusercontent.com/' + RL.r + '/' + ghEnc(RL.b) + '/' + ghEnc(path) + '?t=' + Date.now(), {cache: 'no-store'});
+  if (r2.status === 404) return null;
+  if (!r2.ok) throw new Error('http ' + r2.status);
   return await r2.text();
 }
-function roLiveBar(){
-  var w = $('#roWhen'); if (!w) return;
-  if (RL.err) { w.textContent = RL.err; return; }
-  var d = RL.exp ? new Date(RL.exp) : null, t = '';
-  if (d && !isNaN(d)) t = ' · guardado el ' + d.toLocaleDateString('es-AR') + ' a las ' + d.toLocaleTimeString('es-AR', {hour: '2-digit', minute: '2-digit', hour12: false});
-  w.textContent = 'Plan «' + RL.n + '»' + t + '. Se actualiza solo.';
+async function roEntry(id){
+  var t = await roFile(REG_FILE); if (t == null) return null;
+  try { var o = JSON.parse(t); return (o.enlaces && o.enlaces[id]) || null; } catch (e) { return null; }
 }
-function roLiveApply(text){
+function roOff(kind, ev){
+  roTimers.forEach(clearInterval); roTimers = [];
+  var T = {
+    vencido: ['Este enlace venció', 'El plan era para el evento del ' + (ev ? fShort(ev) : 'día indicado') + '. Si todavía lo necesitás, pedí un enlace nuevo a quien te lo compartió.'],
+    retirado: ['Este plan fue retirado', 'Quien lo compartió lo retiró. Pedí el enlace actualizado.'],
+    antiguo: ['Este enlace ya no funciona', 'Ese tipo de enlace se dejó de usar. Pedí el enlace actualizado a quien te lo compartió.'],
+    baja: ['Este enlace ya no está vigente', 'Cambió la fecha del evento o se generó un enlace nuevo. Pedí el enlace actualizado a quien te lo compartió.']
+  }[kind] || ['Este enlace no está disponible', 'Pedí un enlace nuevo a quien te lo compartió.'];
+  document.body.classList.add('ro-off');
+  var d = document.createElement('div'); d.className = 'rooff'; d.setAttribute('role', 'status');
+  d.innerHTML = '<h2>' + esc(T[0]) + '</h2><p>' + esc(T[1]) + '</p>';
+  document.body.appendChild(d);
+}
+function roKindOf(e){ return e.estado === 'retirado' ? 'retirado' : e.estado === 'baja' ? 'baja' : 'vencido'; }
+function roBar(text){ var w = $('#roWhen'); if (w) w.textContent = text; }
+function roApply(text, first){
   var o = null; try { o = JSON.parse(text); } catch (e) {}
-  if (!o) { RL.err = 'El archivo del plan está dañado.'; return; }
-  RL.exp = o.exportado || '';
+  if (!o) return false;
   var tt = toast; toast = function(){}; roBusy = true;
   try { ghApply(text); } finally { roBusy = false; toast = tt; }
-  roTake(); roBusy = true; try { setTab(RL.first ? 'plan' : tab, true); } finally { roBusy = false; } roLock();
-  if (!RL.first) toast('Plan actualizado.');
+  roBusy = true; try { setTab(first ? 'plan' : tab, true); } finally { roBusy = false; }
+  roTake(); roLock(); return o;
 }
-async function roLiveLoad(){
-  if (roLiveBusy) return; roLiveBusy = true;
+function roHora(d){ return d.toLocaleTimeString('es-AR', {hour: '2-digit', minute: '2-digit', hour12: false}); }
+
+/* copia automática: #c=id */
+async function roCopyLoad(first){
+  if (roBusyLoad) return; roBusyLoad = true;
   var btn = $('#roRef'); if (btn) btn.disabled = true;
   try {
-    var text = await roLiveFetch();
+    var text = await roFile(RL.c + '.json');
+    if (text == null) {
+      var e = await roEntry(RL.c);
+      if (e) { roOff(roKindOf(e), e.evento); return; }
+      RL.err = 'No se encontró el plan. Revisá que el enlace esté completo.'; roBar(RL.err); return;
+    }
+    var o = null; try { o = JSON.parse(text); } catch (x) {}
+    var vence = o && o.publico && o.publico.vence;
+    if (vence && fExpired(vence)) { roOff('vencido', o.publico.evento); return; }
     RL.err = '';
-    if (text !== RL.last) { RL.last = text; roLiveApply(text); }
-    RL.at = Date.now();
+    if (text !== RL.last) { RL.last = text; roApply(text, first); if (!first) toast('Plan actualizado.'); }
+    var d = o && o.exportado ? new Date(o.exportado) : null;
+    roBar('Actualizado ' + (d && !isNaN(d) ? d.toLocaleDateString('es-AR') + ' ' + roHora(d) : '') + '. Se actualiza solo.' + (vence ? ' Disponible hasta el ' + fShort(vence) + '.' : ''));
+    RL.ok = true;
   } catch (e) {
-    RL.err = e && e.nf ? 'No se encontró el plan «' + RL.n + '». El repositorio tiene que ser público y el plan tiene que estar guardado en GitHub.' : 'No se pudo conectar con GitHub' + (RL.last ? ': se muestra la última versión recibida.' : '.');
-  } finally {
-    roLiveBusy = false; RL.first = false; if (btn) btn.disabled = false; roLiveBar(); roTake(); roLock();
-  }
-}
-function roLiveStart(){
-  document.title = 'Rolls de producción · ' + RL.n;
-  var bar = document.querySelector('.robar');
-  var b = document.createElement('button'); b.type = 'button'; b.id = 'roRef'; b.className = 'btn mini'; b.textContent = 'Actualizar';
-  b.addEventListener('click', function(){ roLiveLoad(); }); if (bar) bar.appendChild(b);
-  $('#roWhen').textContent = 'Cargando el plan «' + RL.n + '»…';
-  roLiveLoad();
-  roLiveTimer = setInterval(function(){ if (!document.hidden) roLiveLoad(); }, 60000);
-  document.addEventListener('visibilitychange', function(){ if (!document.hidden && RL.at && Date.now() - RL.at > 20000) roLiveLoad(); });
+    roBar(RL.ok ? 'Sin conexión con GitHub: se muestra la última versión recibida.' : 'No se pudo conectar con GitHub.');
+  } finally { roBusyLoad = false; if (btn) btn.disabled = false; roLock(); }
 }
 function roBoot(){
   if (!RO) return;
@@ -5123,31 +5564,34 @@ function roBoot(){
   var wrap = document.querySelector('.wrap'); wrap.insertBefore(bar, wrap.firstChild);
   var sb = $('#btnShare'); if (sb) sb.textContent = 'Copiar enlace';
   var pe = $('#planEmpty'); if (pe) pe.textContent = 'Esta versión es de solo lectura. Abrí un enlace compartido para ver un plan.';
-  var pending = null, t = 0;
+  S.mm = 'carta';
+  var t = 0;
   new MutationObserver(function(){ clearTimeout(t); t = setTimeout(roLock, 0); }).observe(document.body, {childList: true, subtree: true});
   save = function(){ roGuard(); };
-  document.addEventListener('click', function(e){ if (e.target.closest && e.target.closest('#waShop,[data-hwa]')) { e.stopPropagation(); e.preventDefault(); } }, true);
   ['click', 'change', 'input', 'keyup'].forEach(function(ev){ document.addEventListener(ev, function(){ setTimeout(roGuard, 0); }, false); });
+  document.addEventListener('click', function(e){ if (e.target.closest && e.target.closest('#waShop,[data-hwa]')) { e.stopPropagation(); e.preventDefault(); } }, true);
   window.addEventListener('hashchange', function(){ location.reload(); });
   function done(){ roTake(); roLock(); }
-  RL = roLiveParse();
-  if (RL) { roLiveStart(); return; }
-  var m = /[#&]p=([^&]+)/.exec(location.hash);
-  if (!m) { done(); return; }
-  shDecode(m[1]).then(function(text){
-    var o = null; try { o = JSON.parse(text); } catch (e) {}
-    if (o && o.exportado) {
-      var d = new Date(o.exportado);
-      if (!isNaN(d)) $('#roWhen').textContent = 'Plan compartido el ' + d.toLocaleDateString('es-AR') + ' a las ' + d.toLocaleTimeString('es-AR', {hour: '2-digit', minute: '2-digit', hour12: false}) + '. No se puede modificar.';
-    }
-    importPlan(text); setTab('plan', true); done();
-  }).catch(function(){ toast('El enlace está incompleto o dañado.'); done(); });
+  RL = roParse();
+  if (RL.c && RL.r) {
+    document.title = 'Rolls de producción · plan compartido';
+    var b = document.createElement('button'); b.type = 'button'; b.id = 'roRef'; b.className = 'btn mini'; b.textContent = 'Actualizar';
+    b.addEventListener('click', function(){ roCopyLoad(false); }); bar.appendChild(b);
+    roBar('Cargando el plan…'); done();
+    roCopyLoad(true);
+    roTimers.push(setInterval(function(){ if (!document.hidden) roCopyLoad(false); }, 60000));
+    document.addEventListener('visibilitychange', function(){ if (!document.hidden && RL.c) roCopyLoad(false); });
+    return;
+  }
+  if (RL.p) { roOff('antiguo'); return; }
+  done();
 }
+window.__x = {PUB: PUB, pubLoad: pubLoad, regRead: regRead, pubSync: pubSync, pubLimpiar: pubLimpiar, pubRetirar: pubRetirar, pubFechaCambio: pubFechaCambio, fechaSet: fechaSet, pubEnsureCopy: pubEnsureCopy, ghRenameFecha: ghRenameFecha, roOffState: function(){ return document.body.classList.contains('ro-off'); }};
 
 /* ---------- arranque */
 renderPlan(false);
 roBoot();
-window.__app = {shEncode: shEncode, shDecode: shDecode, shLink: shLink, shPayloadText: shPayloadText, buildMenuHTML: buildMenuHTML, shopMessage: shopMessage, shopGroups: shopGroups, buildMenuPDF: buildMenuPDF, buildRecipesPDF: buildRecipesPDF, menuDump: function(){ return FIN.map(function(f){ var I = menuInfo(f); return {id: f.id, pg: f.pg, sec: f.sec, n: f.n, type: I.type, al: Object.keys(I.al), ev: I.ev, pic: I.pic, raw: I.raw, hot: I.hot, veg: I.veg, vgn: I.vgn, mod: I.mod, sauce: sauceIdx(f).map(function(i){ return f.i[i].n; }), temp: servOf(f, 'Temperatura'), desc: f.desc}; }); }, importPlan: importPlan, planFileText: planFileText, buildProdPDF: buildProdPDF, S: function(){ return S; }, compute: compute, groupsOf: groupsOf, buildRecipesPDF: buildRecipesPDF,
+window.__app = {shPayloadText: shPayloadText, buildMenuHTML: buildMenuHTML, shopMessage: shopMessage, shopGroups: shopGroups, buildMenuPDF: buildMenuPDF, buildRecipesPDF: buildRecipesPDF, menuDump: function(){ return FIN.map(function(f){ var I = menuInfo(f); return {id: f.id, pg: f.pg, sec: f.sec, n: f.n, type: I.type, al: Object.keys(I.al), ev: I.ev, pic: I.pic, raw: I.raw, hot: I.hot, veg: I.veg, vgn: I.vgn, mod: I.mod, sauce: sauceIdx(f).map(function(i){ return f.i[i].n; }), temp: servOf(f, 'Temperatura'), desc: f.desc}; }); }, importPlan: importPlan, planFileText: planFileText, buildProdPDF: buildProdPDF, S: function(){ return S; }, compute: compute, groupsOf: groupsOf, buildRecipesPDF: buildRecipesPDF,
   setTab: setTab, setSub: setSub, byId: byId, byF: byF, FIN: FIN, ORDER: ORDER, levels: levels, schedule: schedule, waitOf: waitOf};
 })();
 
