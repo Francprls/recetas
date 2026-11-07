@@ -1106,6 +1106,24 @@ body.ro input:disabled,body.ro textarea:disabled{opacity:1}
 .btn.danger.qdel{color:var(--bad, #c0392b); border-color:currentColor}
 body.ro .qdel{display:none !important}
 
+/* quitar ingredientes de los rolls */
+.xqbox{margin-bottom:18px}
+.xqbody{padding:4px 2px 8px}
+.xqq{width:100%; box-sizing:border-box; margin:8px 0; min-height:44px; padding:8px 12px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface, transparent); color:inherit; font:inherit}
+.xqg{margin-top:12px}
+.xqr{display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; padding:10px 0; border-top:1px solid var(--line)}
+.xqm{flex:1 1 150px; min-width:0; display:flex; flex-direction:column}
+.xqn{font-weight:600; overflow-wrap:anywhere}
+.xqm small{color:var(--muted)}
+.xqr.off .xqn{text-decoration:line-through; opacity:.6}
+.xqr.part .xqm small{color:var(--accent)}
+.xqb{display:flex; gap:8px; flex-wrap:wrap}
+.xqb .btn{min-height:44px}
+.xqrl{flex-basis:100%; list-style:none; margin:0; padding:0 0 4px 4px}
+.xqrl li label{display:flex; align-items:center; gap:10px; min-height:44px}
+.xqrl input[type=checkbox]{width:22px; height:22px}
+.xqnote{margin:0 0 8px; color:var(--muted)}
+
 /* ================================================================
    CAPA UI/UX PRO MAX — Swiss minimal para herramienta de cocina
    Prioridades del skill: 1 accesibilidad · 2 toque · 5 responsive ·
@@ -1530,7 +1548,7 @@ try {
    AMPLIACIONES DE LA REUNIÓN DE TRABAJO (evento, enrollado, aprendizaje, cierre)
    Todo lo nuevo vive acá; usa las funciones de la app (compute, factor, menuInfo...)
    ====================================================================== */
-var XKEYS = ['mm', 'lm', 'enr', 'mg', 'hand', 'band', 'cont', 'cierre', 'learn', 'sal', 'ev', 'fecha', 'uid', 'pubx'];
+var XKEYS = ['mm', 'lm', 'enr', 'mg', 'hand', 'band', 'cont', 'cierre', 'learn', 'sal', 'ev', 'fecha', 'uid', 'pubx', 'xl'];
 function xdef(){
   return {
     mm: 'carta', lm: 'fichas', ev: 'tras',
@@ -1550,7 +1568,8 @@ function xdef(){
     sal: {},
     fecha: {v: '', log: []},
     uid: '',
-    pubx: {copia: null}
+    pubx: {copia: null},
+    xl: {}
   };
 }
 function xmerge(d, o){
@@ -5110,14 +5129,17 @@ toast = function(msg){ clearTimeout(qTimer); var t = $('#toast'); t.classList.re
 function quitarDelPlan(k, id){
   if (RO) return false;
   var p = planOf(k, id); if (!p) return false;
-  var ix = S.plan.indexOf(p), o = k === 'F' ? byF[id] : byId[id], nm = o ? o.n : '';
+  var ix = S.plan.indexOf(p), o = k === 'F' ? byF[id] : byId[id], nm = o ? o.n : '', xs = k === 'F' && S.xl[id] ? S.xl[id].slice() : null;
   S.plan = S.plan.filter(function(x){ return x !== p; });
+  xqPrune(); exclApply();
   touch();
   if (xOpen) xClose();
   setTab(tab, true);
   toastUndo('Quitado del plan: ' + nm, function(){
     if (planOf(k, id)) return;
     S.plan.splice(Math.min(ix, S.plan.length), 0, p);
+    if (xs) S.xl[id] = xs;
+    exclApply();
     touch(); setTab(tab, true);
     toast('Vuelve al plan: ' + nm);
   });
@@ -5129,7 +5151,8 @@ function quitarBtn(k, id, cls){
 }
 var fichaHtml0 = fichaHtml;
 fichaHtml = function(f){
-  var h = fichaHtml0(f), b = quitarBtn('F', f.id, 'btn mini danger');
+  var h = fichaHtml0(f), b = quitarBtn('F', f.id, 'btn mini danger'), xs = S.xl[f.id];
+  if (xs && xs.length && planOf('F', f.id)) h = h.replace('<div class="fich">', '<div class="fich"><p class="xqnote"><b>Quitado en este plan:</b> ' + xs.map(function(n){ return esc(cleanIng(n)); }).join(' · ') + '</p>');
   return b ? h.replace(/<\/div><\/div>$/, b + '</div></div>') : h;
 };
 var menuCard0 = menuCard;
@@ -5147,6 +5170,159 @@ document.addEventListener('click', function(e){
   e.preventDefault(); e.stopPropagation();
   var a = b.dataset.quitar.split(':'); quitarDelPlan(a[0], a[1]);
 }, true);
+
+
+/* ---------- sacar ingredientes de los rolls del plan (salsas, coberturas, langostinos, palta...)
+   S.xl = {idDelRoll: [nombre de ingrediente, ...]}. Las líneas quitadas se sacan de la ficha mientras dure el plan:
+   así Producción, Compras, Menú, Evento y el PDF las ignoran sin tocar cada cuenta. Viaja dentro del plan (evento.xl). */
+function xqOrig(f){ if (!f._o) f._o = {i: f.i, sa: f.sa, rg: f.rg}; return f._o; }
+FIN.forEach(xqOrig);
+var xqSig = '{}';
+function exclApply(){
+  var xl = S.xl || {}, sig = JSON.stringify(xl);
+  if (sig === xqSig) return false;
+  xqSig = sig;
+  FIN.forEach(function(f){
+    var o = xqOrig(f), ex = xl[f.id];
+    if (!ex || !ex.length) { if (f.i !== o.i) { f.i = o.i; f.sa = o.sa; f.rg = o.rg; } return; }
+    var set = {}, map = {}, ni = [];
+    ex.forEach(function(n){ set[n] = 1; });
+    o.i.forEach(function(ln, ix){ if (!set[ln.n]) { map[ix] = ni.length; ni.push(ln); } });
+    function rm(a){ return (a || []).filter(function(ix){ return map[ix] != null; }).map(function(ix){ return map[ix]; }); }
+    f.i = ni;
+    if (o.sa) f.sa = rm(o.sa);
+    if (o.rg) {
+      var g = {}; for (var k in o.rg) g[k] = o.rg[k];
+      g.rel = (o.rg.rel || []).filter(function(r){ return map[r[0]] != null; }).map(function(r){ return [map[r[0]]].concat(r.slice(1)); });
+      g.cub = rm(o.rg.cub);
+      f.rg = g;
+    }
+  });
+  menuMemo = {};
+  return true;
+}
+function xqPrune(){
+  if (RO) return false;
+  var inP = {}, ch = false;
+  S.plan.forEach(function(p){ if (p.k === 'F') inP[p.id] = 1; });
+  Object.keys(S.xl).forEach(function(id){ if (!inP[id]) { delete S.xl[id]; ch = true; } });
+  if (ch) save();
+  return ch;
+}
+var renderPlan1 = renderPlan;
+renderPlan = function(a){ xqPrune(); exclApply(); renderPlan1(a); };
+var importPlan1 = importPlan;
+importPlan = function(text){
+  var before = S.plan; importPlan1(text);
+  if (S.plan === before) return;
+  var o = null; try { o = JSON.parse(text); } catch (e) {}
+  if (!(o && o.evento && o.evento.xl)) S.xl = {};
+  exclApply();
+};
+exclApply();
+
+var xqOpen = false, xqExp = {}, xqFilt = '', xqCur = [];
+var XQ_ORDER = ['sal', 'cub', 'rel', 'top', 'base'];
+function xqModel(){
+  var by = {}, list = [];
+  S.plan.forEach(function(p){
+    if (p.k !== 'F') return;
+    var f = byF[p.id], o = xqOrig(f), pf = {id: f.id, n: f.n, i: o.i, sa: o.sa, rg: o.rg}, off = S.xl[f.id] || [];
+    o.i.forEach(function(ln, ix){
+      var key = norm(cleanIng(ln.n)), g = by[key];
+      if (!g) { g = by[key] = {key: key, n: cleanIng(ln.n), kind: lnKind(pf, ix), rolls: [], at: {}}; list.push(g); }
+      var r = g.at[f.id];
+      if (!r) { r = g.at[f.id] = {id: f.id, n: f.n, names: []}; g.rolls.push(r); }
+      if (r.names.indexOf(ln.n) < 0) r.names.push(ln.n);
+    });
+  });
+  list.forEach(function(g){
+    g.rolls.forEach(function(r){ var off = S.xl[r.id] || []; r.off = r.names.every(function(n){ return off.indexOf(n) >= 0; }); });
+    g.nOff = g.rolls.filter(function(r){ return r.off; }).length;
+  });
+  return list;
+}
+function xqHtml(){
+  if (RO) return '';
+  var list = xqModel(); if (!list.length) return '';
+  xqCur = list;
+  var nq = list.filter(function(g){ return g.nOff; }).length;
+  var groups = XQ_ORDER.map(function(k){
+    var gs = list.filter(function(g){ return g.kind === k; }).sort(function(a, b){ return cleanIng(a.n).localeCompare(cleanIng(b.n), 'es'); });
+    if (!gs.length) return '';
+    return '<div class="xqg"><h4 class="lbl">' + ROLE_NAMES[k] + 's</h4>' + gs.map(function(g){
+      var ix = list.indexOf(g), all = g.nOff === g.rolls.length, part = g.nOff > 0 && !all, one = g.rolls.length === 1;
+      var info = all ? 'Quitado' + (one ? '' : ' de los ' + g.rolls.length + ' rolls') : part ? 'Quitado de ' + g.nOff + ' de ' + g.rolls.length + ' rolls' : 'En ' + g.rolls.length + (one ? ' roll' : ' rolls');
+      return '<div class="xqr' + (all ? ' off' : part ? ' part' : '') + '" data-n="' + esc(g.key) + '"><div class="xqm"><span class="xqn">' + esc(g.n) + '</span><small>' + esc(info) + '</small></div>' +
+        '<div class="xqb">' + (one ? '' : '<button type="button" class="btn mini" data-xe="' + ix + '" aria-expanded="' + (xqExp[g.key] ? 'true' : 'false') + '">Elegir rolls</button>') +
+        '<button type="button" class="btn mini' + (all ? '' : ' danger') + '" data-xt="' + ix + '">' + (all ? 'Poner de nuevo' : 'Quitar' + (one ? '' : ' de todos')) + '</button></div>' +
+        '<ul class="xqrl"' + (xqExp[g.key] && !one ? '' : ' hidden') + '>' + g.rolls.map(function(r){
+          return '<li><label><input type="checkbox" data-xr="' + ix + '|' + r.id + '"' + (r.off ? '' : ' checked') + '> <span>' + esc(r.n) + '</span></label></li>';
+        }).join('') + '</ul></div>';
+    }).join('') + '</div>';
+  }).join('');
+  return '<details class="hintd xqbox" id="xqBox"' + (xqOpen ? ' open' : '') + '><summary>Quitar ingredientes de los rolls' + (nq ? ' (' + nq + ' quitado' + (nq === 1 ? '' : 's') + ')' : '') + '</summary>' +
+    '<div class="xqbody"><p class="ghn">Lo que quites desaparece de Producción, Compras y Menú de este plan. «Quitar de todos» lo saca de todos los rolls que lo llevan; con «Elegir rolls» lo dejás en algunos.</p>' +
+    '<input type="search" id="xqQ" class="xqq" placeholder="Buscar ingrediente…" autocomplete="off" value="' + esc(xqFilt) + '">' +
+    (nq ? '<button type="button" class="btn mini" data-xall="1">Volver a poner todo</button>' : '') +
+    groups + '<p class="xqnone" hidden>Ningún ingrediente coincide.</p></div></details>';
+}
+function xqFilter(){
+  var box = document.getElementById('xqBox'); if (!box) return;
+  var tk = norm(xqFilt).split(/\s+/).filter(Boolean), any = false;
+  box.querySelectorAll('.xqr').forEach(function(r){ var ok = tk.every(function(t){ return r.dataset.n.indexOf(t) >= 0; }); r.hidden = !ok; if (ok) any = true; });
+  box.querySelectorAll('.xqg').forEach(function(g){ g.hidden = !g.querySelector('.xqr:not([hidden])'); });
+  var nn = box.querySelector('.xqnone'); if (nn) nn.hidden = any;
+}
+var intermediosHtml0 = intermediosHtml;
+intermediosHtml = function(c){ return xqHtml() + intermediosHtml0(c); };
+var prodRender0 = prodRender;
+prodRender = function(){ prodRender0(); xqFilter(); };
+
+function xqRefresh(){ touch(); exclApply(); setTab(tab, true); }
+function xqSet(g, ids, off){
+  g.rolls.forEach(function(r){
+    if (ids.indexOf(r.id) < 0) return;
+    var a = (S.xl[r.id] || []).slice();
+    r.names.forEach(function(name){
+      var ix = a.indexOf(name);
+      if (off && ix < 0) a.push(name);
+      if (!off && ix >= 0) a.splice(ix, 1);
+    });
+    if (a.length) S.xl[r.id] = a; else delete S.xl[r.id];
+  });
+}
+function xqUndoable(msg, fn){
+  var snap = JSON.stringify(S.xl);
+  fn(); xqRefresh();
+  toastUndo(msg, function(){ S.xl = JSON.parse(snap); xqRefresh(); toast('Volvió como estaba.'); });
+}
+document.addEventListener('click', function(e){
+  if (RO) return;
+  var b = e.target.closest('#xqBox button'); if (!b) return;
+  if (b.dataset.xt != null) {
+    var g = xqCur[+b.dataset.xt]; if (!g) return;
+    var all = g.nOff === g.rolls.length, ids = g.rolls.map(function(r){ return r.id; });
+    xqUndoable((all ? 'Vuelve: ' : 'Quitado de los rolls: ') + g.n, function(){ xqSet(g, ids, !all); });
+  } else if (b.dataset.xe != null) {
+    var g2 = xqCur[+b.dataset.xe]; if (!g2) return;
+    xqExp[g2.key] = !xqExp[g2.key];
+    var ul = b.closest('.xqr').querySelector('.xqrl'); ul.hidden = !xqExp[g2.key]; b.setAttribute('aria-expanded', xqExp[g2.key] ? 'true' : 'false');
+  } else if (b.dataset.xall) {
+    xqUndoable('Se volvió a poner todo.', function(){ S.xl = {}; });
+  }
+});
+document.addEventListener('change', function(e){
+  if (RO) return;
+  var t = e.target; if (!(t.dataset && t.dataset.xr)) return;
+  var a = t.dataset.xr.split('|'), g = xqCur[+a[0]]; if (!g) return;
+  xqSet(g, [a[1]], !t.checked); xqRefresh();
+});
+document.addEventListener('input', function(e){
+  var t = e.target; if (t.id !== 'xqQ') return;
+  xqFilt = t.value; xqFilter();
+});
+document.addEventListener('toggle', function(e){ if (e.target && e.target.id === 'xqBox') xqOpen = e.target.open; }, true);
 
 /* ---------- compartir en solo lectura: enlace con el plan cargado + versión que no se puede modificar */
 var SHARE_KEY = 'rolls.share.base.v1';
