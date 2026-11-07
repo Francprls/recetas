@@ -1,0 +1,184 @@
+{
+ "app": "produccion-rolls",
+ "version": 2,
+ "exportado": "2026-11-07T03:38:22.455Z",
+ "modo": "porc",
+ "personas": 3,
+ "plan": [
+  {
+   "tipo": "final",
+   "nombre": "Philly Roll",
+   "id": "F28",
+   "cantidad": 31
+  },
+  {
+   "tipo": "final",
+   "nombre": "Salmón Avocado Roll",
+   "id": "F29",
+   "cantidad": 31
+  },
+  {
+   "tipo": "final",
+   "nombre": "New York Clásico",
+   "id": "F72",
+   "cantidad": 27
+  },
+  {
+   "tipo": "final",
+   "nombre": "Creamy Avo",
+   "id": "F71",
+   "cantidad": 28
+  },
+  {
+   "tipo": "final",
+   "nombre": "Mar y Tierra Roll",
+   "id": "F30",
+   "cantidad": 29
+  },
+  {
+   "tipo": "final",
+   "nombre": "Tropical Mango",
+   "id": "F77",
+   "cantidad": 20
+  },
+  {
+   "tipo": "final",
+   "nombre": "Crunchy Ebi",
+   "id": "F33",
+   "cantidad": 25
+  },
+  {
+   "tipo": "final",
+   "nombre": "Phila Frito",
+   "id": "F70",
+   "cantidad": 26
+  },
+  {
+   "tipo": "final",
+   "nombre": "Philadelphia Lang",
+   "id": "F74",
+   "cantidad": 24
+  },
+  {
+   "tipo": "final",
+   "nombre": "Honey Ginger Roll",
+   "id": "F32",
+   "cantidad": 25
+  },
+  {
+   "tipo": "final",
+   "nombre": "Yakitori de Pollo",
+   "id": "F78",
+   "cantidad": 158
+  }
+ ],
+ "ya_lo_tengo": [],
+ "stock_parcial": {},
+ "peso_por_unidad_g": {},
+ "evento": {
+  "mm": "carta",
+  "lm": "fichas",
+  "enr": {
+   "mode": "auto",
+   "sel": {},
+   "done": {},
+   "all": false,
+   "rice": {}
+  },
+  "mg": {
+   "on": true,
+   "sushi": 50,
+   "palta": 20,
+   "ent": 5,
+   "wok": 0
+  },
+  "hand": {
+   "por": "",
+   "nota": "",
+   "qty": {}
+  },
+  "band": {
+   "people": 80,
+   "ppp": 30,
+   "rpb": 16,
+   "t": [
+    {
+     "n": "Turno 1",
+     "h": "20:30",
+     "p": 45
+    },
+    {
+     "n": "Turno 2",
+     "h": "22:30",
+     "p": 35
+    }
+   ],
+   "tr": {},
+   "res": 0
+  },
+  "cont": {
+   "items": [
+    {
+     "n": "Rolls sin arroz envueltos en pepino o palta",
+     "ing": "",
+     "used": false
+    },
+    {
+     "n": "Sashimi de salmón",
+     "ing": "",
+     "used": false
+    },
+    {
+     "n": "Tartar",
+     "ing": "",
+     "used": false
+    },
+    {
+     "n": "Gunkan",
+     "ing": "",
+     "used": false
+    },
+    {
+     "n": "Niguiris con poca cantidad de arroz",
+     "ing": "",
+     "used": false
+    }
+   ],
+   "arroz": "",
+   "arrozUsado": ""
+  },
+  "cierre": {
+   "t1": "",
+   "t2": "",
+   "rep": "",
+   "agot": "",
+   "nota": "",
+   "salE": "",
+   "salL": "",
+   "arE": "",
+   "arC": "",
+   "rows": {}
+  },
+  "sal": {},
+  "ev": "band",
+  "fecha": {
+   "v": "2026-11-13",
+   "log": [],
+   "ult": {
+    "de": "0002-11-13",
+    "cuando": "2026-11-07T03:27:26.079Z"
+   }
+  }
+ },
+ "estado": {
+  "produccion_hecha": {},
+  "mise": {},
+  "inicio": "20:28",
+  "productos_hechos": {}
+ },
+ "publico": {
+  "id": "c8kcoaiku4s",
+  "evento": "2026-11-13",
+  "vence": "2026-11-14"
+ }
+}
