@@ -1,7 +1,7 @@
 {
  "app": "produccion-rolls",
  "version": 2,
- "exportado": "2026-11-10T11:25:53.239Z",
+ "exportado": "2026-11-10T11:26:53.239Z",
  "modo": "porc",
  "personas": 3,
  "plan": [
@@ -75,7 +75,7 @@
    "tipo": "intermedio",
    "nombre": "Salsa de maracuyá",
    "id": "R124",
-   "cantidad": 2000
+   "cantidad": 1000
   },
   {
    "tipo": "intermedio",
@@ -85,9 +85,7 @@
   }
  ],
  "ya_lo_tengo": [],
- "stock_parcial": {
-  "Salsa teriyaki": 4
- },
+ "stock_parcial": {},
  "peso_por_unidad_g": {},
  "evento": {
   "mm": "carta",
