@@ -1,7 +1,7 @@
 {
  "app": "produccion-rolls",
  "version": 2,
- "exportado": "2026-11-10T11:26:53.239Z",
+ "exportado": "2026-11-10T11:27:53.239Z",
  "modo": "porc",
  "personas": 3,
  "plan": [
@@ -84,8 +84,12 @@
    "cantidad": 399
   }
  ],
- "ya_lo_tengo": [],
- "stock_parcial": {},
+ "ya_lo_tengo": [
+  "Vinagreta"
+ ],
+ "stock_parcial": {
+  "Salsa teriyaki": 3500
+ },
  "peso_por_unidad_g": {},
  "evento": {
   "mm": "carta",
