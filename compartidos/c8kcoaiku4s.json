@@ -1,7 +1,7 @@
 {
  "app": "produccion-rolls",
  "version": 2,
- "exportado": "2026-11-10T01:55:44.387Z",
+ "exportado": "2026-11-10T02:34:51.874Z",
  "modo": "porc",
  "personas": 3,
  "plan": [
@@ -64,6 +64,18 @@
    "nombre": "Yakitori de Pollo",
    "id": "F78",
    "cantidad": 158
+  },
+  {
+   "tipo": "intermedio",
+   "nombre": "Guacamole",
+   "id": "R038",
+   "cantidad": 840
+  },
+  {
+   "tipo": "intermedio",
+   "nombre": "Salsa de maracuyá",
+   "id": "R124",
+   "cantidad": 3800
   }
  ],
  "ya_lo_tengo": [],
