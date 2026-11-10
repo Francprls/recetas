@@ -1,7 +1,7 @@
 {
  "app": "produccion-rolls",
  "version": 2,
- "exportado": "2026-11-07T03:38:22.455Z",
+ "exportado": "2026-11-10T01:55:44.387Z",
  "modo": "porc",
  "personas": 3,
  "plan": [
@@ -9,7 +9,7 @@
    "tipo": "final",
    "nombre": "Philly Roll",
    "id": "F28",
-   "cantidad": 31
+   "cantidad": 30
   },
   {
    "tipo": "final",
@@ -21,7 +21,7 @@
    "tipo": "final",
    "nombre": "New York Clásico",
    "id": "F72",
-   "cantidad": 27
+   "cantidad": 28
   },
   {
    "tipo": "final",
@@ -33,7 +33,7 @@
    "tipo": "final",
    "nombre": "Mar y Tierra Roll",
    "id": "F30",
-   "cantidad": 29
+   "cantidad": 28
   },
   {
    "tipo": "final",
@@ -51,18 +51,12 @@
    "tipo": "final",
    "nombre": "Phila Frito",
    "id": "F70",
-   "cantidad": 26
+   "cantidad": 25
   },
   {
    "tipo": "final",
    "nombre": "Philadelphia Lang",
    "id": "F74",
-   "cantidad": 24
-  },
-  {
-   "tipo": "final",
-   "nombre": "Honey Ginger Roll",
-   "id": "F32",
    "cantidad": 25
   },
   {
@@ -79,7 +73,7 @@
   "mm": "carta",
   "lm": "fichas",
   "enr": {
-   "mode": "auto",
+   "mode": "man",
    "sel": {},
    "done": {},
    "all": false,
@@ -168,6 +162,11 @@
     "de": "0002-11-13",
     "cuando": "2026-11-07T03:27:26.079Z"
    }
+  },
+  "xl": {
+   "F30": [
+    "Salsa de sésamo"
+   ]
   }
  },
  "estado": {
