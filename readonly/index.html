@@ -1124,6 +1124,24 @@ body.ro .qdel{display:none !important}
 .xqrl input[type=checkbox]{width:22px; height:22px}
 .xqnote{margin:0 0 8px; color:var(--muted)}
 
+/* compras: de qué recetas sale cada ítem */
+.item.cw{flex-wrap:wrap; cursor:pointer}
+.item.cw .name::after{content:"  \25BE"; font-size:.7em; opacity:.45}
+.item.cw.open .name::after{content:"  \25B4"}
+.cwhint{margin:0 16px 8px; color:var(--muted); font-size:.85rem}
+.cwd{flex-basis:100%; padding:2px 0 10px 34px; cursor:default}
+body.ro .cwd{padding-left:0}
+.cwt{margin:0 0 4px; font:700 .72rem var(--sans); letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+.cwu{list-style:none; margin:0; padding:0}
+.cwu li{padding:6px 0; border-top:1px dashed var(--line)}
+.cwu li:first-child{border-top:0}
+.cwr{display:flex; gap:8px; align-items:baseline; flex-wrap:wrap}
+.cwl{font-weight:600; min-width:0; overflow-wrap:anywhere}
+.cwk{font-size:.7rem; padding:1px 7px; border-radius:99px; border:1px solid var(--line); color:var(--muted)}
+.cwv{margin-left:auto; font-family:var(--mono)}
+.cwp{display:block; color:var(--muted); margin-top:2px}
+.cwn{margin:0; color:var(--muted)}
+
 /* ================================================================
    CAPA UI/UX PRO MAX — Swiss minimal para herramienta de cocina
    Prioridades del skill: 1 accesibilidad · 2 toque · 5 responsive ·
@@ -5324,6 +5342,80 @@ document.addEventListener('input', function(e){
   xqFilt = t.value; xqFilter();
 });
 document.addEventListener('toggle', function(e){ if (e.target && e.target.id === 'xqBox') xqOpen = e.target.open; }, true);
+
+/* ---------- compras: tocar un ítem muestra de qué recetas sale (productos y preparaciones) */
+var cwOpen = {};
+function cwKey(e){ return BUY_MERGE[e] || (BUY[e] ? e : null); }
+function cwParts(c, name){
+  var out = [];
+  Object.keys(c.tot).forEach(function(e){ if (e === name || cwKey(e) === name) out.push(c.tot[e]); });
+  if (c.pend[name]) out.push(c.pend[name]);
+  return out;
+}
+/* de qué productos del plan termina saliendo una preparación (sube por las preparaciones que la piden) */
+function cwRoots(c, label, seen){
+  var out = {fin: [], plan: false}, fid = byNameF[norm(label)];
+  if (fid) { out.fin.push(byF[fid].n); return out; }
+  var rid = byNameI[norm(label)], n = rid && c.need[rid];
+  if (!n || seen[rid]) return out;
+  var s2 = {}; for (var k in seen) s2[k] = 1; s2[rid] = 1;
+  Object.keys(n.from).forEach(function(l){
+    if (l === 'Plan') { out.plan = true; return; }
+    var r = cwRoots(c, l, s2);
+    r.fin.forEach(function(x){ if (out.fin.indexOf(x) < 0) out.fin.push(x); });
+    if (r.plan) out.plan = true;
+  });
+  return out;
+}
+function cwHtml(c, t){
+  var parts = cwParts(c, t.e), order = [], am = {};
+  parts.forEach(function(p){
+    (p.order || []).forEach(function(l){
+      if (order.indexOf(l) < 0) order.push(l);
+      var a = am[l] = am[l] || {};
+      var s = p.src && p.src[l]; if (!s) return;
+      ['g', 'ml', 'u'].forEach(function(u){ if (s.u[u]) a[u] = (a[u] || 0) + s.u[u]; });
+    });
+  });
+  if (!order.length) { order = t.order || []; order.forEach(function(l){ am[l] = (t.src[l] || {}).u || {}; }); }
+  if (!order.length) return '<p class="cwn">No hay más detalle para este ítem.</p>';
+  var rows = order.map(function(l){
+    var a = am[l] || {}, v = ['g', 'ml', 'u'].filter(function(u){ return a[u]; }).map(function(u){ return fmtQty(a[u], u); }).join(' + ');
+    var isF = !!byNameF[norm(l)];
+    var para = '';
+    if (!isF) {
+      var r = cwRoots(c, l, {}), who = r.fin.slice().sort(function(x, y){ return x.localeCompare(y, 'es'); });
+      if (r.plan) who.push('plan (se pidió suelta)');
+      if (who.length) para = '<small class="cwp">Para: ' + esc(who.join(' · ')) + '</small>';
+    }
+    return '<li><div class="cwr"><span class="cwl">' + esc(l) + '</span><span class="cwk">' + (isF ? 'Producto' : 'Preparación') + '</span><span class="cwv">' + esc(v || 'a gusto') + '</span></div>' + para + '</li>';
+  }).join('');
+  return '<p class="cwt">Se usa en</p><ul class="cwu">' + rows + '</ul>';
+}
+var renderShop0 = renderShop;
+renderShop = function(){
+  renderShop0();
+  var c = compute(), gs = shopGroups(c), secs = document.querySelectorAll('#groups .group'), hint = document.getElementById('cwHint');
+  if (!hint) { hint = document.createElement('p'); hint.id = 'cwHint'; hint.className = 'cwhint'; hint.textContent = 'Tocá un ingrediente para ver de qué recetas sale.'; $('#groups').parentNode.insertBefore(hint, $('#groups')); }
+  hint.hidden = !gs.length;
+  gs.forEach(function(g, gi){
+    var lis = secs[gi] && secs[gi].querySelectorAll('li.item'); if (!lis) return;
+    g.items.forEach(function(t, ii){
+      var li = lis[ii]; if (!li) return;
+      li.classList.add('cw'); li.dataset.cw = t.e;
+      var d = document.createElement('div'); d.className = 'cwd'; d.innerHTML = cwHtml(c, t); d.hidden = !cwOpen[t.e];
+      li.appendChild(d); li.classList.toggle('open', !!cwOpen[t.e]);
+    });
+  });
+};
+document.addEventListener('click', function(e){
+  var li = e.target.closest('#groups li.cw'); if (!li) return;
+  if (e.target.closest('.cwd, button, a, input')) return;
+  if (!RO) { var lab = li.querySelector('.lab'); if (lab) { var r = lab.getBoundingClientRect(); if (e.clientX - r.left < 52) return; } }
+  e.preventDefault();
+  var k = li.dataset.cw; cwOpen[k] = !cwOpen[k];
+  li.classList.toggle('open', !!cwOpen[k]); li.querySelector('.cwd').hidden = !cwOpen[k];
+}, true);
 
 /* ---------- compartir en solo lectura: enlace con el plan cargado + versión que no se puede modificar */
 var SHARE_KEY = 'rolls.share.base.v1';
