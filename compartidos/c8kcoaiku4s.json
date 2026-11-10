@@ -1,7 +1,7 @@
 {
  "app": "produccion-rolls",
  "version": 2,
- "exportado": "2026-11-10T02:37:58.543Z",
+ "exportado": "2026-11-10T11:24:53.205Z",
  "modo": "porc",
  "personas": 3,
  "plan": [
@@ -85,7 +85,9 @@
   }
  ],
  "ya_lo_tengo": [],
- "stock_parcial": {},
+ "stock_parcial": {
+  "Salsa de maracuyá": 1
+ },
  "peso_por_unidad_g": {},
  "evento": {
   "mm": "carta",
