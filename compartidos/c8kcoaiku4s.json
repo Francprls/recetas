@@ -1,7 +1,7 @@
 {
  "app": "produccion-rolls",
  "version": 2,
- "exportado": "2026-11-10T02:34:51.874Z",
+ "exportado": "2026-11-10T02:35:24.683Z",
  "modo": "porc",
  "personas": 3,
  "plan": [
@@ -75,7 +75,7 @@
    "tipo": "intermedio",
    "nombre": "Salsa de maracuyá",
    "id": "R124",
-   "cantidad": 3800
+   "cantidad": 2000
   }
  ],
  "ya_lo_tengo": [],
