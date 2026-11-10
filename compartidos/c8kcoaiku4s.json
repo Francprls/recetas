@@ -1,7 +1,7 @@
 {
  "app": "produccion-rolls",
  "version": 2,
- "exportado": "2026-11-10T02:37:51.901Z",
+ "exportado": "2026-11-10T02:37:58.543Z",
  "modo": "porc",
  "personas": 3,
  "plan": [
@@ -81,7 +81,7 @@
    "tipo": "intermedio",
    "nombre": "Mousse de Palta",
    "id": "R030",
-   "cantidad": 532
+   "cantidad": 399
   }
  ],
  "ya_lo_tengo": [],
