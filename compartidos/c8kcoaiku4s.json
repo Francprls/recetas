@@ -1,7 +1,7 @@
 {
  "app": "produccion-rolls",
  "version": 2,
- "exportado": "2026-11-10T11:27:53.239Z",
+ "exportado": "2026-11-11T01:14:12.041Z",
  "modo": "porc",
  "personas": 3,
  "plan": [
@@ -95,7 +95,7 @@
   "mm": "carta",
   "lm": "fichas",
   "enr": {
-   "mode": "man",
+   "mode": "auto",
    "sel": {},
    "done": {},
    "all": false,
